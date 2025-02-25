@@ -8,7 +8,7 @@ interface MediaCardProps {
 export default function MediaCard({ isExpanded, onExpand }: MediaCardProps) {
   return (
     <li
-      className={`grid cursor-pointer grid-rows-[auto_1fr] overflow-hidden rounded-3xl bg-gray-900 transition-all duration-500 ease-in-out sm:grid-cols-[auto_1fr] sm:grid-rows-none ${isExpanded ? "sm:max-w-[600px]" : "sm:max-w-[250px]"}`}
+      className={`grid cursor-pointer grid-rows-[auto_1fr] overflow-hidden rounded-3xl bg-neutral-900 transition-all duration-500 ease-in-out sm:grid-cols-[auto_1fr] sm:grid-rows-none ${isExpanded ? "sm:max-w-[600px]" : "sm:max-w-[250px]"}`}
       onClick={onExpand}
     >
       <div className="grid aspect-[1/1.5] grid-rows-[1fr_auto] sm:w-[250px]">
