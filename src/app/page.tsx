@@ -1,5 +1,4 @@
-// import Image from "next/image";
-import ChangingText from "@/app/components/changingText/ChangingText";
+import ChangingText from "@/components/changingText/ChangingText";
 
 export default function Home() {
   const words = ["movies", "tv shows", "documentaries", "anime"];
@@ -9,7 +8,7 @@ export default function Home() {
       <h2 className="text-6xl">
         All your <ChangingText text={words} />, organized in one place
       </h2>
-      <button className="bg-main-500 rounded-3xl px-8 py-4 font-bold text-black">
+      <button className="rounded-3xl bg-main-500 px-8 py-4 font-bold text-black">
         Start Organizing
       </button>
     </div>
