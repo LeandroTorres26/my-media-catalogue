@@ -9,7 +9,7 @@ export default function Register() {
   const [password, setPassword] = useState("");
   const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const registerUser = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       const res = await fetch("/api/register", {
@@ -27,7 +27,7 @@ export default function Register() {
   return (
     <div className="grid h-screen w-full place-items-center px-4">
       <form
-        onSubmit={handleSubmit}
+        onSubmit={registerUser}
         className="grid w-full max-w-[25rem] gap-6 self-center rounded-2xl bg-neutral-900 px-6 py-4"
       >
         <h1 className="justify-self-center text-2xl">Sign Up</h1>
@@ -63,7 +63,7 @@ export default function Register() {
         </div>
 
         <div className="flex flex-col items-center gap-2">
-          <button className="mx-auto w-fit rounded-md border border-white px-4 py-2">
+          <button className="mx-auto w-fit rounded-md border border-white px-4 py-2 hover:border-main-500 hover:bg-main-500 hover:text-black">
             Sign Up
           </button>
           <Link href="/login" className="hover:underline">

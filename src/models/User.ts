@@ -1,13 +1,13 @@
-import mongoose, { Types } from "mongoose";
+import mongoose, { Schema, Document } from "mongoose";
 
-export interface UserDocument {
+export interface UserDocument extends Document {
   email: string;
   password: string;
   name: string;
-  medias?: Types.ObjectId[];
+  medias?: mongoose.Types.ObjectId[];
 }
 
-const UserSchema = new mongoose.Schema<UserDocument>(
+const UserSchema: Schema = new mongoose.Schema<UserDocument>(
   {
     email: {
       type: String,
@@ -26,10 +26,11 @@ const UserSchema = new mongoose.Schema<UserDocument>(
       type: String,
       required: [true, "Name is required"],
     },
-    medias: [{ type: mongoose.Schema.Types.ObjectId, ref: "Media" }],
+    medias: [{ type: Schema.Types.ObjectId, ref: "Media" }],
   },
   { timestamps: true },
 );
 
-export default mongoose.models.User<UserDocument> ||
-  mongoose.model<UserDocument>("User", UserSchema);
+const User =
+  mongoose.models.User || mongoose.model<UserDocument>("User", UserSchema);
+export default User;

@@ -35,7 +35,7 @@ export default function Header() {
     }
   };
   return (
-    <header className="fixed flex w-full justify-end px-8 py-4 text-xl">
+    <header className="sticky top-0 flex w-full justify-end px-8 py-4 text-xl">
       <nav className="flex w-fit items-center gap-8">
         <Link
           href="/"
