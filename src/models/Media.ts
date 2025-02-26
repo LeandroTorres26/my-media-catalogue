@@ -1,38 +1,38 @@
-import mongoose, { Types } from "mongoose";
+import mongoose from "mongoose";
 
 export interface MediaDocument {
   title: string;
-  category: string;
+  category: "movie" | "tv show" | "anime" | "documentary";
+  status: "watching" | "on hold" | "completed" | "dropped" | "planning";
+  image?: string;
   rating?: number;
   genres?: string[];
   plot?: string;
-  image?: string;
   release_date?: Date;
-  status: "watching" | "on hold" | "completed" | "dropped" | "planning";
   current_episode?: {
     episode: number;
     season: number;
   };
-  userId: Types.ObjectId;
 }
 
 const MediaSchema = new mongoose.Schema<MediaDocument>(
   {
     title: { type: String, required: true },
-    genres: { type: [String] },
-    plot: { type: String }, // plot opcional, pois não é obrigatório
-    image: { type: String }, // String opcional
-    release_date: { type: Date, required: true },
+    category: {
+      type: String,
+      enum: ["movie", "tv show", "anime", "documentary"],
+      required: true,
+    },
     status: {
       type: String,
       enum: ["watching", "on hold", "completed", "dropped", "planning"],
       required: true,
     },
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
+    rating: { type: Number },
+    image: { type: String },
+    genres: { type: [String] },
+    plot: { type: String },
+    release_date: { type: Date },
     current_episode: {
       episode: { type: Number },
       season: { type: Number },
@@ -41,6 +41,6 @@ const MediaSchema = new mongoose.Schema<MediaDocument>(
   { timestamps: true },
 );
 
-// Exporta o modelo Media, reutilizando um modelo existente se já houver um definido
-export default mongoose.models.Media<MediaDocument> ||
-  mongoose.model<MediaDocument>("Media", MediaSchema);
+const Media =
+  mongoose.models.Media<MediaDocument> || mongoose.model("Media", MediaSchema);
+export default Media;

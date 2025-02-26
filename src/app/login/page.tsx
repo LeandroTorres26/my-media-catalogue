@@ -8,7 +8,7 @@ export default function Login() {
   const [error, setError] = useState("");
 
   const router = useRouter();
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const loginUser = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const res = await signIn("credentials", {
@@ -30,7 +30,7 @@ export default function Login() {
   return (
     <div className="grid h-screen w-full place-items-center px-4">
       <form
-        onSubmit={handleSubmit}
+        onSubmit={loginUser}
         className="grid w-full max-w-[25rem] gap-6 self-center rounded-2xl bg-neutral-900 px-6 py-4"
       >
         {error && <div className="text-black">{error}</div>}
@@ -55,7 +55,7 @@ export default function Login() {
         </div>
 
         <div className="flex flex-col items-center gap-2">
-          <button className="mx-auto w-fit rounded-md border border-white px-4 py-2">
+          <button className="mx-auto w-fit rounded-md border border-white px-4 py-2 hover:border-main-500 hover:bg-main-500 hover:text-black">
             Sign In
           </button>
           <Link href="/register" className="hover:underline">
