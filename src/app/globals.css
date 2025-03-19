@@ -23,25 +23,29 @@ body {
 @layer components {
   .custom-scrollbar {
     @apply overflow-y-auto;
-    scrollbar-width: thin; /* 'auto', 'thin', or 'none' */
-    scrollbar-color: #888 transparent; /* thumb track */
+    scrollbar-width: thin;
+    scrollbar-color: #888 transparent;
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
+    &::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 4px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: #888;
+      border-radius: 4px;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
   }
 
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 8px; /* Adjust as needed */
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 4px;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 4px;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #555;
+  .modal {
+    @apply fixed inset-0 z-50;
+    &::before {
+      content: "";
+      @apply fixed inset-0 -z-10 bg-black bg-opacity-50;
+    }
   }
 }

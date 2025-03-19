@@ -16,7 +16,6 @@ export async function GET(request: NextApiRequest) {
     }
 
     const user = await User.findOne({ email: token.email }).populate("medias");
-    console.log("user", user);
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }

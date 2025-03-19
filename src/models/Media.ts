@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 
 export interface MediaDocument {
+  _id: string;
   title: string;
   category: "movie" | "tv show" | "anime" | "documentary";
   status: "watching" | "on hold" | "completed" | "dropped" | "planning";
@@ -8,7 +9,7 @@ export interface MediaDocument {
   rating?: number;
   genres?: string[];
   plot?: string;
-  release_date?: Date;
+  release_date?: number;
   current_episode?: {
     episode: number;
     season: number;
@@ -32,7 +33,7 @@ const MediaSchema = new mongoose.Schema<MediaDocument>(
     image: { type: String },
     genres: { type: [String] },
     plot: { type: String },
-    release_date: { type: Date },
+    release_date: { type: Number },
     current_episode: {
       episode: { type: Number },
       season: { type: Number },
