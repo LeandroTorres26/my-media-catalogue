@@ -13,7 +13,6 @@ if (!cached) {
 }
 
 async function connect() {
-  console.log("uri>", MONGODB_URI);
   if (cached.conn) {
     return cached.conn;
   }

@@ -40,19 +40,14 @@ export async function POST(request: NextRequest) {
     await media.save();
 
     const user = await User.findById(token.sub);
-    console.log("user", user);
     if (!user) {
-      return NextResponse.json(
-        { error: "Usuário não encontrado" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "User not Found" }, { status: 404 });
     }
     user.medias.push(media._id);
     await user.save();
 
-    return NextResponse.json({ message: "Mídia cadastrada com sucesso" });
-  } catch (error) {
-    console.error("Erro ao cadastrar mídia:", error);
+    return NextResponse.json({ message: "Meddia added succesfully" });
+  } catch {
     return NextResponse.json(
       { error: "Ocorreu um erro ao cadastrar a mídia." },
       { status: 500 },
