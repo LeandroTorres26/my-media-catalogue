@@ -102,7 +102,7 @@ export default function Catalogue() {
 
 // Header Component
 const Header = ({ onAddMedia }: { onAddMedia: () => void }) => (
-  <div className="container mx-auto grid w-full grid-cols-[1fr_repeat(4,auto)] items-center justify-end gap-10 rounded-2xl bg-neutral-900 px-8 py-3 text-black">
+  <div className="container mx-auto grid w-full grid-cols-[repeat(4,auto)] items-center justify-end gap-10 rounded-2xl bg-neutral-900 px-8 py-3 text-black">
     <SearchInput />
     <CategorySelect />
     <OrderBySelect />
