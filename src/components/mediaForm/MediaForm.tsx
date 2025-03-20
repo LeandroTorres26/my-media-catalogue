@@ -144,8 +144,8 @@ export default function MediaForm({
         const response = result.response.text();
         const startIndex = response.indexOf("[");
         const endIndex = response.lastIndexOf("]");
-        const genresJson = response.slice(startIndex, endIndex + 1);
-        setGenres([...new Set([...genres, ...JSON.parse(genresJson)])]);
+        const genresJson = JSON.parse(response.slice(startIndex, endIndex + 1));
+        setGenres([...new Set([...genres, genresJson])]);
       }
     } catch (error) {
       console.error(error);
@@ -155,7 +155,7 @@ export default function MediaForm({
   return (
     <dialog className="modal block w-full bg-transparent" onClick={onClose}>
       <div
-        className="m-0 mx-auto flex max-h-[90lvh] w-full max-w-[500px] flex-col gap-x-16 gap-y-4 overflow-y-auto rounded-2xl bg-neutral-900 py-4 text-white"
+        className="bg-neutral-900 m-0 mx-auto flex max-h-[90lvh] w-full max-w-[500px] flex-col gap-x-16 gap-y-4 overflow-y-auto rounded-2xl py-4 text-white"
         onClick={(e) => e.stopPropagation()}
       >
         <button onClick={onClose} className="mr-4 self-end">
@@ -324,9 +324,9 @@ const MediaDetailsSection = ({
   season?: number;
   episode?: number;
 }) => (
-  <fieldset className="my-4 grid content-start items-start rounded-md bg-neutral-800">
+  <fieldset className="bg-neutral-800 my-4 grid content-start items-start rounded-md">
     <legend
-      className="flex w-full cursor-pointer items-center justify-between rounded-md bg-neutral-700 px-4 py-2 text-center text-lg"
+      className="bg-neutral-700 flex w-full cursor-pointer items-center justify-between rounded-md px-4 py-2 text-center text-lg"
       onClick={onToggle}
     >
       Media Details
@@ -354,7 +354,7 @@ const MediaDetailsSection = ({
             }}
             className="flex gap-1 rounded-md bg-main-500 px-2 py-1 font-semibold text-black"
           >
-            <svg
+            {/* <svg
               width="25"
               height="25"
               viewBox="0 0 102 78"
@@ -370,7 +370,7 @@ const MediaDetailsSection = ({
               <g clip-path="url(#clip2_41_13)">
                 <path d="M101.783 24.4401C95.4536 24.8285 89.4852 27.5178 85.0015 32.0015C80.5178 36.4852 77.8285 42.4536 77.4401 48.7826H77.3425C76.9548 42.4534 74.2656 36.4846 69.7818 32.0008C65.298 27.517 59.3292 24.8278 53 24.4401V24.3425C59.3292 23.9548 65.298 21.2656 69.7818 16.7818C74.2656 12.298 76.9548 6.32918 77.3425 0L77.4401 0C77.8285 6.32896 80.5178 12.2974 85.0015 16.7811C89.4852 21.2648 95.4536 23.9541 101.783 24.3425V24.4401Z" />
               </g>
-            </svg>
+            </svg> */}
             Generate
           </button>
         </div>
@@ -405,7 +405,7 @@ const MediaDetailsSection = ({
             }}
             className="flex gap-1 rounded-md bg-main-500 px-2 py-1 font-semibold text-black"
           >
-            <svg
+            {/* <svg
               width="25"
               height="25"
               viewBox="0 0 102 78"
@@ -421,7 +421,7 @@ const MediaDetailsSection = ({
               <g clip-path="url(#clip2_41_13)">
                 <path d="M101.783 24.4401C95.4536 24.8285 89.4852 27.5178 85.0015 32.0015C80.5178 36.4852 77.8285 42.4536 77.4401 48.7826H77.3425C76.9548 42.4534 74.2656 36.4846 69.7818 32.0008C65.298 27.517 59.3292 24.8278 53 24.4401V24.3425C59.3292 23.9548 65.298 21.2656 69.7818 16.7818C74.2656 12.298 76.9548 6.32918 77.3425 0L77.4401 0C77.8285 6.32896 80.5178 12.2974 85.0015 16.7811C89.4852 21.2648 95.4536 23.9541 101.783 24.3425V24.4401Z" />
               </g>
-            </svg>
+            </svg> */}
             Generate
           </button>
         </div>
