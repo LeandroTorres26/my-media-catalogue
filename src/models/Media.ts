@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 export interface MediaDocument {
-  _id: string;
+  _id?: string; // Optional, because MongoDB will add it automatically
   title: string;
   category: "movie" | "tv show" | "anime" | "documentary";
   status: "watching" | "on hold" | "completed" | "dropped" | "planning";

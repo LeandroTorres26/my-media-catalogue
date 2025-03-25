@@ -5,10 +5,12 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { MediaDocument } from "@/models/Media";
 import MediaForm from "@/components/mediaForm/MediaForm";
+import { set } from "mongoose";
 
 export default function Catalogue() {
   const { status, data: session } = useSession();
   const router = useRouter();
+  const [searchTerm, setSearchTerm] = useState("");
   const [userMedias, setUserMedias] = useState<MediaDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -25,35 +27,45 @@ export default function Catalogue() {
     }
   }, [status, router]);
 
-  const loadMedias = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-
-    if (!session?.user?.email) {
-      setUserMedias([]);
-      setLoading(false);
-      return;
-    }
-
-    try {
+  const loadMedias = useCallback(
+    async (searchTerm: string) => {
+      setLoading(true);
       setError(null);
-      const res = await fetch("/api/user/medias");
-      if (!res.ok) throw new Error("Failed to fetch user medias");
-      const medias = await res.json();
-      setUserMedias(medias);
-      setLoading(false);
-    } catch (error) {
-      console.error("Error fetching user medias:", error);
-      setError("Failed to load media. Please try again.");
-      setLoading(false);
-    }
-  }, [session]);
+
+      if (!session?.user?.email) {
+        setUserMedias([]);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setError(null);
+        const url = searchTerm
+          ? `/api/user/medias?search=${searchTerm}`
+          : `/api/user/medias`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("Failed to fetch user medias");
+        const medias = await res.json();
+        setUserMedias(medias);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching user medias:", error);
+        setError("Failed to load media. Please try again.");
+        setLoading(false);
+      }
+    },
+    [session],
+  );
 
   useEffect(() => {
-    loadMedias();
-  }, [loadMedias]);
+    loadMedias(searchTerm);
+  }, [loadMedias, searchTerm]);
 
-  // Media form handlers
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const searchTerm = event.target.value;
+    loadMedias(searchTerm);
+  };
+
   const handleOpenMediaForm = (edit: boolean, index: number | null) => {
     setEditMode(edit);
     if (edit && index !== null) {
@@ -67,7 +79,6 @@ export default function Catalogue() {
     setMediaToEdit(null);
   };
 
-  // Expand/collapse handler
   const handleExpand = (index: number) => {
     setExpandedIndex((prevIndex) => (prevIndex === index ? null : index));
   };
@@ -76,7 +87,10 @@ export default function Catalogue() {
 
   return (
     <div className="grid size-full min-h-screen grid-rows-[auto_1fr] justify-items-center gap-y-8 pt-[5.9375rem]">
-      <CatalogueControls onAddMedia={() => handleOpenMediaForm(false, null)} />
+      <CatalogueControls
+        onAddMedia={() => handleOpenMediaForm(false, null)}
+        setSearchTerm={setSearchTerm}
+      />
 
       {loading && <span className="loading loading-spinner loading-xl"></span>}
       {error && <p className="text-red-500">{error}</p>}
@@ -86,7 +100,9 @@ export default function Catalogue() {
           onClose={handleCloseMediaForm}
           editMode={editMode}
           mediaToEdit={mediaToEdit}
-          onRefresh={loadMedias}
+          onRefresh={() => {
+            loadMedias(searchTerm);
+          }}
         />
       )}
       {!loading && (
@@ -95,7 +111,9 @@ export default function Catalogue() {
           expandedIndex={expandedIndex}
           onExpand={handleExpand}
           onEditMedia={handleOpenMediaForm}
-          onDeleteMedia={loadMedias}
+          onDeleteMedia={() => {
+            loadMedias(searchTerm);
+          }}
         />
       )}
     </div>
@@ -103,9 +121,15 @@ export default function Catalogue() {
 }
 
 // CatalogueControls Component
-const CatalogueControls = ({ onAddMedia }: { onAddMedia: () => void }) => (
+const CatalogueControls = ({
+  onAddMedia,
+  setSearchTerm,
+}: {
+  onAddMedia: () => void;
+  setSearchTerm: (term: string) => void;
+}) => (
   <div className="bg-base-100 container mx-auto grid w-full grid-cols-[auto_1fr] items-center justify-center gap-10 rounded-2xl px-8 py-3 sm:grid-cols-[repeat(7,auto)] lg:justify-end">
-    <SearchInput />
+    <SearchInput setSearchTerm={setSearchTerm} />
     <CategorySelect />
     <OrderBySelect />
     <button
@@ -117,21 +141,25 @@ const CatalogueControls = ({ onAddMedia }: { onAddMedia: () => void }) => (
   </div>
 );
 
-// Search Input Component
-const SearchInput = () => (
+const SearchInput = ({
+  setSearchTerm,
+}: {
+  setSearchTerm: (term: string) => void;
+}) => (
   <div className="col-span-2 grid grid-cols-subgrid items-center gap-2">
-    <label htmlFor="search">Search by:</label>
+    <label htmlFor="search">Search Title:</label>
     <input
       type="text"
       name="search"
       placeholder="e.g The Godfather"
       className="input"
-      disabled
+      onChange={(e) => {
+        setSearchTerm(e.target.value);
+      }}
     />
   </div>
 );
 
-// Category Select Component
 const CategorySelect = () => (
   <div className="col-span-2 grid grid-cols-subgrid items-center gap-2">
     <label htmlFor="category">Category:</label>
@@ -144,7 +172,6 @@ const CategorySelect = () => (
   </div>
 );
 
-// Order By Select Component
 const OrderBySelect = () => (
   <div className="col-span-2 grid grid-cols-subgrid items-center gap-2">
     <label htmlFor="category">Order by:</label>
@@ -157,7 +184,6 @@ const OrderBySelect = () => (
   </div>
 );
 
-// Media List Component
 const MediaList = ({
   userMedias,
   expandedIndex,
