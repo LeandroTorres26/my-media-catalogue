@@ -36,6 +36,7 @@ export default function Catalogue() {
     }
 
     try {
+      setError(null);
       const res = await fetch("/api/user/medias");
       if (!res.ok) throw new Error("Failed to fetch user medias");
       const medias = await res.json();
@@ -74,10 +75,10 @@ export default function Catalogue() {
   if (!isAuthenticated) return null;
 
   return (
-    <div className="mt-4 grid h-screen w-full grid-rows-[auto_1fr] justify-items-center gap-y-8">
-      <Header onAddMedia={() => handleOpenMediaForm(false, null)} />
+    <div className="grid size-full min-h-screen grid-rows-[auto_1fr] justify-items-center gap-y-8 pt-[5.9375rem]">
+      <CatalogueControls onAddMedia={() => handleOpenMediaForm(false, null)} />
 
-      {loading && <p>Loading...</p>}
+      {loading && <span className="loading loading-spinner loading-xl"></span>}
       {error && <p className="text-red-500">{error}</p>}
 
       {openMediaForm && (
@@ -88,27 +89,28 @@ export default function Catalogue() {
           onRefresh={loadMedias}
         />
       )}
-
-      <MediaList
-        userMedias={userMedias}
-        expandedIndex={expandedIndex}
-        onExpand={handleExpand}
-        onEditMedia={handleOpenMediaForm}
-        onDeleteMedia={loadMedias}
-      />
+      {!loading && (
+        <MediaList
+          userMedias={userMedias}
+          expandedIndex={expandedIndex}
+          onExpand={handleExpand}
+          onEditMedia={handleOpenMediaForm}
+          onDeleteMedia={loadMedias}
+        />
+      )}
     </div>
   );
 }
 
-// Header Component
-const Header = ({ onAddMedia }: { onAddMedia: () => void }) => (
-  <div className="container mx-auto grid w-full grid-cols-[repeat(4,auto)] items-center justify-end gap-10 rounded-2xl bg-neutral-900 px-8 py-3 text-black">
+// CatalogueControls Component
+const CatalogueControls = ({ onAddMedia }: { onAddMedia: () => void }) => (
+  <div className="bg-base-100 container mx-auto grid w-full grid-cols-[auto_1fr] items-center justify-center gap-10 rounded-2xl px-8 py-3 sm:grid-cols-[repeat(7,auto)] lg:justify-end">
     <SearchInput />
     <CategorySelect />
     <OrderBySelect />
     <button
       onClick={onAddMedia}
-      className="rounded-2xl bg-main-500 px-8 py-4 font-bold"
+      className="btn btn-primary btn-lg col-span-2 mx-auto lg:col-span-1"
     >
       Add Media
     </button>
@@ -117,26 +119,23 @@ const Header = ({ onAddMedia }: { onAddMedia: () => void }) => (
 
 // Search Input Component
 const SearchInput = () => (
-  <div className="flex items-center gap-2">
-    <label htmlFor="search" className="text-white">
-      Search by:
-    </label>
+  <div className="col-span-2 grid grid-cols-subgrid items-center gap-2">
+    <label htmlFor="search">Search by:</label>
     <input
       type="text"
       name="search"
       placeholder="e.g The Godfather"
-      className="rounded-md p-2 text-sm"
+      className="input"
+      disabled
     />
   </div>
 );
 
 // Category Select Component
 const CategorySelect = () => (
-  <div className="flex items-center gap-2">
-    <label htmlFor="category" className="text-white">
-      Category:
-    </label>
-    <select name="category" className="rounded-md p-2 text-sm">
+  <div className="col-span-2 grid grid-cols-subgrid items-center gap-2">
+    <label htmlFor="category">Category:</label>
+    <select name="category" className="select" disabled>
       <option value="movies">Movies</option>
       <option value="tv shows">TV Shows</option>
       <option value="anime">Anime</option>
@@ -147,11 +146,9 @@ const CategorySelect = () => (
 
 // Order By Select Component
 const OrderBySelect = () => (
-  <div className="flex items-center gap-2">
-    <label htmlFor="category" className="text-white">
-      Order by:
-    </label>
-    <select name="category" className="rounded-md p-2 text-sm">
+  <div className="col-span-2 grid grid-cols-subgrid items-center gap-2">
+    <label htmlFor="category">Order by:</label>
+    <select name="category" className="select" disabled>
       <option value="a-z">A-Z</option>
       <option value="z-a">Z-A</option>
       <option value="release_date">Release Date</option>
@@ -174,7 +171,7 @@ const MediaList = ({
   onEditMedia: (edit: boolean, index: number | null) => void;
   onDeleteMedia: () => void;
 }) => (
-  <ul className="container flex flex-wrap items-start gap-x-10 gap-y-8 px-4">
+  <ul className="container flex w-full flex-wrap items-start gap-x-10 gap-y-8 p-4">
     {userMedias.map((media, index) => (
       <MediaCard
         key={media._id || index}
