@@ -18,6 +18,8 @@ export async function GET(request: NextApiRequest) {
     const urlParams = new URLSearchParams(request.url?.split("?")[1] || "");
     const searchTerm = urlParams.get("search");
     const category = urlParams.get("category");
+    const orderBy = urlParams.get("orderby");
+
     let matchQuery = {};
     if (searchTerm || category) {
       matchQuery = {
@@ -25,10 +27,48 @@ export async function GET(request: NextApiRequest) {
         ...(category && { category: category }),
       };
     }
+
+    let sortQuery = {};
+    if (orderBy) {
+      switch (orderBy) {
+        case "a-z":
+          sortQuery = { title: 1 };
+          break;
+        case "z-a":
+          sortQuery = { title: -1 };
+          break;
+        case "date_added_newest":
+          sortQuery = { createdAt: -1 };
+          break;
+        case "date_added_oldest":
+          sortQuery = { createdAt: 1 };
+          break;
+        case "last_modified":
+          sortQuery = { updatedAt: -1 };
+          break;
+        case "release_year_newest":
+          sortQuery = { release_date: -1 };
+          break;
+        case "release_year_oldest":
+          sortQuery = { release_date: 1 };
+          break;
+        case "rating_highest":
+          sortQuery = { rating: -1 };
+          break;
+        case "rating_lowest":
+          sortQuery = { rating: 1 };
+          break;
+        default:
+          break;
+      }
+    }
+
     const user = await User.findOne({ email: token.email }).populate({
       path: "medias",
       match: matchQuery,
+      options: { sort: sortQuery },
     });
+
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
