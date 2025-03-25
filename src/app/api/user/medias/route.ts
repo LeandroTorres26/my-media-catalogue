@@ -15,13 +15,16 @@ export async function GET(request: NextApiRequest) {
       return NextResponse.json({ error: "Not authorized" }, { status: 401 });
     }
 
-    const searchParams = new URLSearchParams(request.url?.split("?")[1] || "");
-    const searchTerm = searchParams.get("search");
+    const urlParams = new URLSearchParams(request.url?.split("?")[1] || "");
+    const searchTerm = urlParams.get("search");
+    const category = urlParams.get("category");
     let matchQuery = {};
-    if (searchTerm) {
-      matchQuery = { title: { $regex: searchTerm, $options: "i" } };
+    if (searchTerm || category) {
+      matchQuery = {
+        ...(searchTerm && { title: { $regex: searchTerm, $options: "i" } }),
+        ...(category && { category: category }),
+      };
     }
-    console.log("match query >", matchQuery);
     const user = await User.findOne({ email: token.email }).populate({
       path: "medias",
       match: matchQuery,
