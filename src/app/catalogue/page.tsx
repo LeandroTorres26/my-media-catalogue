@@ -11,9 +11,10 @@ export default function Catalogue() {
   const { status, data: session } = useSession();
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
   const [userMedias, setUserMedias] = useState<MediaDocument[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [mediasLoading, setMediasLoading] = useState(true);
+  const [mediasError, setMediasError] = useState<string | null>(null);
   const [openMediaForm, setOpenMediaForm] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [mediaToEdit, setMediaToEdit] = useState<MediaDocument | null>(null);
@@ -28,43 +29,48 @@ export default function Catalogue() {
   }, [status, router]);
 
   const loadMedias = useCallback(
-    async (searchTerm: string) => {
-      setLoading(true);
-      setError(null);
+    async (searchTerm: string, category: string) => {
+      setMediasLoading(true);
+      setMediasError(null);
 
       if (!session?.user?.email) {
         setUserMedias([]);
-        setLoading(false);
+        setMediasLoading(false);
         return;
       }
 
       try {
-        setError(null);
-        const url = searchTerm
-          ? `/api/user/medias?search=${searchTerm}`
-          : `/api/user/medias`;
+        setMediasError(null);
+        let url = "/api/user/medias";
+        if (searchTerm || category) {
+          url += "?";
+        }
+        if (searchTerm) {
+          url += `search=${encodeURIComponent(searchTerm)}`;
+        }
+        if (searchTerm && category) {
+          url += "&";
+        }
+        if (category) {
+          url += `category=${encodeURIComponent(category)}`;
+        }
         const res = await fetch(url);
         if (!res.ok) throw new Error("Failed to fetch user medias");
         const medias = await res.json();
         setUserMedias(medias);
-        setLoading(false);
+        setMediasLoading(false);
       } catch (error) {
         console.error("Error fetching user medias:", error);
-        setError("Failed to load media. Please try again.");
-        setLoading(false);
+        setMediasError("Failed to load media. Please try again.");
+        setMediasLoading(false);
       }
     },
     [session],
   );
 
   useEffect(() => {
-    loadMedias(searchTerm);
-  }, [loadMedias, searchTerm]);
-
-  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const searchTerm = event.target.value;
-    loadMedias(searchTerm);
-  };
+    loadMedias(searchTerm, categoryFilter);
+  }, [loadMedias, searchTerm, categoryFilter]);
 
   const handleOpenMediaForm = (edit: boolean, index: number | null) => {
     setEditMode(edit);
@@ -90,10 +96,14 @@ export default function Catalogue() {
       <CatalogueControls
         onAddMedia={() => handleOpenMediaForm(false, null)}
         setSearchTerm={setSearchTerm}
+        setCategoryFilter={setCategoryFilter}
+        categoryFilter={categoryFilter}
       />
 
-      {loading && <span className="loading loading-spinner loading-xl"></span>}
-      {error && <p className="text-red-500">{error}</p>}
+      {mediasLoading && (
+        <span className="loading loading-spinner loading-xl"></span>
+      )}
+      {mediasError && <p className="text-red-500">{mediasError}</p>}
 
       {openMediaForm && (
         <MediaForm
@@ -101,18 +111,18 @@ export default function Catalogue() {
           editMode={editMode}
           mediaToEdit={mediaToEdit}
           onRefresh={() => {
-            loadMedias(searchTerm);
+            loadMedias(searchTerm, categoryFilter);
           }}
         />
       )}
-      {!loading && (
+      {!mediasLoading && (
         <MediaList
           userMedias={userMedias}
           expandedIndex={expandedIndex}
           onExpand={handleExpand}
           onEditMedia={handleOpenMediaForm}
           onDeleteMedia={() => {
-            loadMedias(searchTerm);
+            loadMedias(searchTerm, categoryFilter);
           }}
         />
       )}
@@ -124,13 +134,20 @@ export default function Catalogue() {
 const CatalogueControls = ({
   onAddMedia,
   setSearchTerm,
+  setCategoryFilter,
+  categoryFilter,
 }: {
   onAddMedia: () => void;
   setSearchTerm: (term: string) => void;
+  setCategoryFilter: (category: string) => void;
+  categoryFilter: string;
 }) => (
   <div className="bg-base-100 container mx-auto grid w-full grid-cols-[auto_1fr] items-center justify-center gap-10 rounded-2xl px-8 py-3 sm:grid-cols-[repeat(7,auto)] lg:justify-end">
     <SearchInput setSearchTerm={setSearchTerm} />
-    <CategorySelect />
+    <CategorySelect
+      setCategoryFilter={setCategoryFilter}
+      categoryFilter={categoryFilter}
+    />
     <OrderBySelect />
     <button
       onClick={onAddMedia}
@@ -160,14 +177,28 @@ const SearchInput = ({
   </div>
 );
 
-const CategorySelect = () => (
+const CategorySelect = ({
+  setCategoryFilter,
+  categoryFilter,
+}: {
+  setCategoryFilter: (category: string) => void;
+  categoryFilter: string;
+}) => (
   <div className="col-span-2 grid grid-cols-subgrid items-center gap-2">
     <label htmlFor="category">Category:</label>
-    <select name="category" className="select" disabled>
-      <option value="movies">Movies</option>
-      <option value="tv shows">TV Shows</option>
+    <select
+      name="category"
+      className="select"
+      defaultValue={categoryFilter}
+      onChange={(e) => {
+        setCategoryFilter(e.target.value);
+      }}
+    >
+      <option value="">All</option>
+      <option value="movie">Movies</option>
+      <option value="tv show">TV Shows</option>
       <option value="anime">Anime</option>
-      <option value="documentaries">Documentaries</option>
+      <option value="documentary">Documentaries</option>
     </select>
   </div>
 );
