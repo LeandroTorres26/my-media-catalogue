@@ -16,5 +16,5 @@ export default function ChangingText({ text }: { text: string[] }) {
     return () => clearInterval(interval);
   }, [text]);
 
-  return <span className="text-main-500">{currentText}</span>;
+  return <span className="text-primary">{currentText}</span>;
 }

@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Roboto, Roboto_Mono } from "next/font/google";
 import "./globals.css";
 
 import { Provider } from "./provider";
 import Header from "@/components/header/Header";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const RobotoSans = Roboto({
+  variable: "--font-Roboto-sans",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const RobotoMono = Roboto_Mono({
+  variable: "--font-Roboto-mono",
   subsets: ["latin"],
 });
 
@@ -30,7 +30,7 @@ export default function RootLayout({
     <html lang="en">
       <Provider>
         <body
-          className={`${geistSans.variable} ${geistMono.variable} font-[family-name:var(--font-geist-sans)] antialiased`}
+          className={`${RobotoSans.variable} ${RobotoMono.variable} h-full font-[family-name:var(--font-Roboto-sans)] antialiased`}
         >
           <Header />
           {children}

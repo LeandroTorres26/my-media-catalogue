@@ -12,7 +12,7 @@ export default function Register() {
   const registerUser = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const res = await fetch("/api/register", {
+      const res = await fetch("/api/user/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password }),
@@ -28,45 +28,119 @@ export default function Register() {
     <div className="grid h-screen w-full place-items-center px-4">
       <form
         onSubmit={registerUser}
-        className="grid w-full max-w-[25rem] gap-6 self-center rounded-2xl bg-neutral-900 px-6 py-4"
+        className="bg-base-100 grid w-full max-w-[25rem] gap-6 self-center rounded-2xl px-6 py-4"
       >
         <h1 className="justify-self-center text-2xl">Sign Up</h1>
         <div className="flex flex-col gap-2">
-          <label htmlFor="name">Name</label>
-          <input
-            type="text"
-            name="name"
-            placeholder="John Doe"
-            className="rounded-md px-2 py-1 text-sm text-black"
-            onChange={(e) => setName(e.target.value)}
-          />
+          <label htmlFor="name">Username</label>
+          <label className="input validator">
+            <svg
+              className="h-[1em] opacity-50"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+            >
+              <g
+                strokeLinejoin="round"
+                strokeLinecap="round"
+                strokeWidth="2.5"
+                fill="none"
+                stroke="currentColor"
+              >
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </g>
+            </svg>
+            <input
+              type="input"
+              name="name"
+              placeholder="Username"
+              pattern="[A-Za-z][A-Za-z0-9\-]*"
+              minLength={3}
+              maxLength={30}
+              title="Only letters, numbers or dash"
+              required
+              onChange={(e) => setName(e.target.value)}
+            />
+          </label>
+          <p className="validator-hint hidden">
+            Must be 3 to 30 characters
+            <br />
+            containing only letters, numbers or dash
+          </p>
         </div>
         <div className="flex flex-col gap-2">
           <label htmlFor="email">Email</label>
-          <input
-            type="email"
-            name="email"
-            placeholder="youremail@mail.com"
-            className="rounded-md px-2 py-1 text-sm text-black"
-            onChange={(e) => setEmail(e.target.value)}
-          />
+          <div className="input validator">
+            <svg
+              className="h-[1em] opacity-50"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+            >
+              <g
+                strokeLinejoin="round"
+                strokeLinecap="round"
+                strokeWidth="2.5"
+                fill="none"
+                stroke="currentColor"
+              >
+                <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+              </g>
+            </svg>
+            <input
+              type="email"
+              name="email"
+              placeholder="mail@site.com"
+              required
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+          <div className="validator-hint hidden">Enter valid email address</div>
         </div>
         <div className="flex flex-col gap-2">
           <label htmlFor="password">Password</label>
-          <input
-            type="password"
-            name="password"
-            placeholder="password"
-            className="rounded-md px-2 py-1 text-sm text-black"
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <div className="input validator">
+            <svg
+              className="h-[1em] opacity-50"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+            >
+              <g
+                strokeLinejoin="round"
+                strokeLinecap="round"
+                strokeWidth="2.5"
+                fill="none"
+                stroke="currentColor"
+              >
+                <path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"></path>
+                <circle cx="16.5" cy="7.5" r=".5" fill="currentColor"></circle>
+              </g>
+            </svg>
+            <input
+              type="password"
+              name="password"
+              required
+              placeholder="Password"
+              minLength={8}
+              pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
+              title="Must be more than 8 characters, including number, lowercase letter, uppercase letter"
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+          <p className="validator-hint hidden">
+            Must be more than 8 characters, including
+            <br />
+            At least one number
+            <br />
+            At least one lowercase letter
+            <br />
+            At least one uppercase letter
+          </p>
         </div>
 
-        <div className="flex flex-col items-center gap-2">
-          <button className="mx-auto w-fit rounded-md border border-white px-4 py-2 hover:border-main-500 hover:bg-main-500 hover:text-black">
-            Sign Up
-          </button>
-          <Link href="/login" className="hover:underline">
+        <div className="flex flex-col items-center">
+          <button className="btn btn-primary">Sign In</button>
+          <Link href="/login" className="btn btn-link btn-neutral">
             Already have an account?
           </Link>
         </div>
