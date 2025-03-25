@@ -12,6 +12,7 @@ export default function Catalogue() {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
+  const [orderBy, setOrderBy] = useState("a-z");
   const [userMedias, setUserMedias] = useState<MediaDocument[]>([]);
   const [mediasLoading, setMediasLoading] = useState(true);
   const [mediasError, setMediasError] = useState<string | null>(null);
@@ -29,7 +30,7 @@ export default function Catalogue() {
   }, [status, router]);
 
   const loadMedias = useCallback(
-    async (searchTerm: string, category: string) => {
+    async (searchTerm: string, categoryFilter: string, orderBy: string) => {
       setMediasLoading(true);
       setMediasError(null);
 
@@ -41,19 +42,18 @@ export default function Catalogue() {
 
       try {
         setMediasError(null);
-        let url = "/api/user/medias";
-        if (searchTerm || category) {
-          url += "?";
-        }
+        const param = new URLSearchParams();
         if (searchTerm) {
-          url += `search=${encodeURIComponent(searchTerm)}`;
+          param.append("search", searchTerm);
         }
-        if (searchTerm && category) {
-          url += "&";
+        if (categoryFilter) {
+          param.append("category", categoryFilter);
         }
-        if (category) {
-          url += `category=${encodeURIComponent(category)}`;
+        if (orderBy) {
+          param.append("orderby", orderBy);
         }
+        const query = param.toString();
+        let url = query ? `/api/user/medias?${query}` : "/api/user/medias";
         const res = await fetch(url);
         if (!res.ok) throw new Error("Failed to fetch user medias");
         const medias = await res.json();
@@ -69,8 +69,8 @@ export default function Catalogue() {
   );
 
   useEffect(() => {
-    loadMedias(searchTerm, categoryFilter);
-  }, [loadMedias, searchTerm, categoryFilter]);
+    loadMedias(searchTerm, categoryFilter, orderBy);
+  }, [loadMedias, searchTerm, categoryFilter, orderBy]);
 
   const handleOpenMediaForm = (edit: boolean, index: number | null) => {
     setEditMode(edit);
@@ -98,6 +98,8 @@ export default function Catalogue() {
         setSearchTerm={setSearchTerm}
         setCategoryFilter={setCategoryFilter}
         categoryFilter={categoryFilter}
+        setOrderBy={setOrderBy}
+        orderBy={orderBy}
       />
 
       {mediasLoading && (
@@ -111,7 +113,7 @@ export default function Catalogue() {
           editMode={editMode}
           mediaToEdit={mediaToEdit}
           onRefresh={() => {
-            loadMedias(searchTerm, categoryFilter);
+            loadMedias(searchTerm, categoryFilter, orderBy);
           }}
         />
       )}
@@ -122,7 +124,7 @@ export default function Catalogue() {
           onExpand={handleExpand}
           onEditMedia={handleOpenMediaForm}
           onDeleteMedia={() => {
-            loadMedias(searchTerm, categoryFilter);
+            loadMedias(searchTerm, categoryFilter, orderBy);
           }}
         />
       )}
@@ -136,11 +138,15 @@ const CatalogueControls = ({
   setSearchTerm,
   setCategoryFilter,
   categoryFilter,
+  setOrderBy,
+  orderBy,
 }: {
   onAddMedia: () => void;
   setSearchTerm: (term: string) => void;
   setCategoryFilter: (category: string) => void;
   categoryFilter: string;
+  setOrderBy: (order: string) => void;
+  orderBy: string;
 }) => (
   <div className="bg-base-100 container mx-auto grid w-full grid-cols-[auto_1fr] items-center justify-center gap-10 rounded-2xl px-8 py-3 sm:grid-cols-[repeat(7,auto)] lg:justify-end">
     <SearchInput setSearchTerm={setSearchTerm} />
@@ -148,7 +154,7 @@ const CatalogueControls = ({
       setCategoryFilter={setCategoryFilter}
       categoryFilter={categoryFilter}
     />
-    <OrderBySelect />
+    <OrderBySelect setOrderBy={setOrderBy} orderBy={orderBy} />
     <button
       onClick={onAddMedia}
       className="btn btn-primary btn-lg col-span-2 mx-auto lg:col-span-1"
@@ -203,14 +209,32 @@ const CategorySelect = ({
   </div>
 );
 
-const OrderBySelect = () => (
+const OrderBySelect = ({
+  setOrderBy,
+  orderBy,
+}: {
+  setOrderBy: (order: string) => void;
+  orderBy: string;
+}) => (
   <div className="col-span-2 grid grid-cols-subgrid items-center gap-2">
     <label htmlFor="category">Order by:</label>
-    <select name="category" className="select" disabled>
+    <select
+      name="category"
+      className="select"
+      defaultValue={orderBy}
+      onChange={(e) => {
+        setOrderBy(e.target.value);
+      }}
+    >
       <option value="a-z">A-Z</option>
       <option value="z-a">Z-A</option>
-      <option value="release_date">Release Date</option>
-      <option value="rating">Rating</option>
+      <option value="date_added_newest">Date Added (Newest)</option>
+      <option value="date_added_oldest">Date Added (Oldest)</option>
+      <option value="last_modified">Last Modified</option>
+      <option value="release_year_newest">Newest Release Year</option>
+      <option value="release_year_oldest">Oldest Release Year</option>
+      <option value="rating_highest">Highest Rating</option>
+      <option value="rating_lowest">Lowest Rating</option>
     </select>
   </div>
 );
