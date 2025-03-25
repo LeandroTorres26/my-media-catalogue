@@ -27,10 +27,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" data-theme="system">
+    <html lang="en">
       <Provider>
         <body
-          className={`${RobotoSans.variable} ${RobotoMono.variable} font-[family-name:var(--font-Roboto-sans)] antialiased`}
+          className={`${RobotoSans.variable} ${RobotoMono.variable} h-full font-[family-name:var(--font-Roboto-sans)] antialiased`}
         >
           <Header />
           {children}

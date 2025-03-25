@@ -1,6 +1,4 @@
-"use client";
 import Image from "next/image";
-import { useState, useEffect } from "react";
 import { MediaDocument } from "@/models/Media";
 
 interface MediaCardProps {
@@ -20,19 +18,6 @@ export default function MediaCard({
   openMediaForm,
   onDelete,
 }: MediaCardProps) {
-  const [cardMenu, setCardMenu] = useState(false);
-
-  const handleCardMenu = (event: React.MouseEvent) => {
-    event.stopPropagation();
-    setCardMenu(!cardMenu);
-  };
-
-  useEffect(() => {
-    if (!isExpanded) {
-      setCardMenu(false);
-    }
-  }, [isExpanded]);
-
   const handleDelete = async () => {
     try {
       const response = await fetch(`/api/media/${media._id}`, {
@@ -51,21 +36,17 @@ export default function MediaCard({
 
   return (
     <li
-      className={`grid grid-rows-[auto_1fr] overflow-hidden rounded-3xl bg-neutral-900 text-white transition-all duration-500 ease-in-out sm:grid-cols-[auto_1fr] sm:grid-rows-none ${isExpanded ? "sm:max-w-[600px]" : "sm:max-w-[250px]"}`}
+      className={`bg-base-300 text-base-content border-base-100 grid grid-rows-[auto_1fr] overflow-hidden rounded-2xl border transition-all duration-500 ease-in-out sm:grid-cols-[auto_1fr] sm:grid-rows-none ${isExpanded ? "max-h-[850px] sm:max-w-[37.5rem]" : "max-h-[26.8125rem] sm:max-w-[15.625rem]"}`}
     >
       <MediaImage media={media} isExpanded={isExpanded} onExpand={onExpand} />
-      <div className="grid max-h-[375px] grid-cols-[1fr_auto] grid-rows-[auto_auto_1fr] items-start gap-2 rounded-t-2xl border-t border-gray-800 px-4 py-2 sm:min-w-[350px] sm:border-none">
+      <div className="grid max-h-[375px] grid-cols-[1fr_auto] grid-rows-[auto_auto_1fr] items-start gap-2 p-4 sm:min-w-[350px]">
         <MediaInfo media={media} />
         <CardMenu
-          cardMenu={cardMenu}
-          onToggleMenu={handleCardMenu}
           onEdit={() => {
-            setCardMenu(false);
             openMediaForm(true, index);
           }}
           onDelete={() => {
             handleDelete();
-            setCardMenu(false);
           }}
         />
         <MediaGenres genres={media.genres} />
@@ -84,8 +65,8 @@ const MediaImage = ({
   isExpanded: boolean;
   onExpand: () => void;
 }) => (
-  <div
-    className="grid aspect-[2/3] cursor-pointer grid-rows-[1fr_auto] place-content-center sm:w-[250px]"
+  <figure
+    className="grid aspect-2/3 cursor-pointer grid-rows-[1fr_auto] sm:w-[250px]"
     onClick={onExpand}
   >
     <Image
@@ -95,12 +76,12 @@ const MediaImage = ({
       alt=""
       className="size-full object-cover"
     />
-    <h3
+    <figcaption
       className={`line-clamp-2 overflow-hidden text-center transition-all duration-300 ease-in-out ${isExpanded ? "max-h-0 p-0" : "max-h-10 p-1"}`}
     >
       {media.title}
-    </h3>
-  </div>
+    </figcaption>
+  </figure>
 );
 
 const MediaInfo = ({ media }: { media: MediaDocument }) => (
@@ -113,26 +94,72 @@ const MediaInfo = ({ media }: { media: MediaDocument }) => (
       {media.current_episode?.season && ` - S${media.current_episode.season}`}
       {media.current_episode?.episode && ` E${media.current_episode.episode}`}
     </h4>
-    {media.rating && <h4 className="text-sm">Rating: {media.rating}/10</h4>}
+    {(media.rating || media.rating === 0) && (
+      <div className="rating rating-half mt-2">
+        <div
+          className="mask mask-star-2 mask-half-1"
+          aria-label="0.5 star"
+          aria-current={media.rating === 1}
+        ></div>
+        <div
+          className="mask mask-star-2 mask-half-2"
+          aria-label="1 star"
+          aria-current={media.rating === 2}
+        ></div>
+        <div
+          className="mask mask-star-2 mask-half-1"
+          aria-label="1.5 star"
+          aria-current={media.rating === 3}
+        ></div>
+        <div
+          className="mask mask-star-2 mask-half-2"
+          aria-label="2 star"
+          aria-current={media.rating === 4}
+        ></div>
+        <div
+          className="mask mask-star-2 mask-half-1"
+          aria-label="2.5 star"
+          aria-current={media.rating === 5}
+        ></div>
+        <div
+          className="mask mask-star-2 mask-half-2"
+          aria-label="3 star"
+          aria-current={media.rating === 6}
+        ></div>
+        <div
+          className="mask mask-star-2 mask-half-1"
+          aria-label="3.5 star"
+          aria-current={media.rating === 7}
+        ></div>
+        <div
+          className="mask mask-star-2 mask-half-2"
+          aria-label="4 star"
+          aria-current={media.rating === 8}
+        ></div>
+        <div
+          className="mask mask-star-2 mask-half-1"
+          aria-label="4.5 star"
+          aria-current={media.rating === 9}
+        ></div>
+        <div
+          className="mask mask-star-2 mask-half-2"
+          aria-label="5 star"
+          aria-current={media.rating === 10}
+        ></div>
+      </div>
+    )}
   </div>
 );
 
 const CardMenu = ({
-  cardMenu,
-  onToggleMenu,
   onEdit,
   onDelete,
 }: {
-  cardMenu: boolean;
-  onToggleMenu: (event: React.MouseEvent) => void;
   onEdit: () => void;
   onDelete: () => void;
 }) => (
-  <div className="relative">
-    <button
-      onClick={onToggleMenu}
-      className="transition-transform duration-300 hover:scale-x-110"
-    >
+  <div className="dropdown dropdown-end">
+    <div tabIndex={0} role="button" className="btn btn-sm m-1">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         id="Outline"
@@ -145,23 +172,30 @@ const CardMenu = ({
         <circle cx="12" cy="12" r="2" />
         <circle cx="22" cy="12" r="2" />
       </svg>
-    </button>
-    {cardMenu && (
-      <ul className="absolute right-0 top-7 flex w-20 cursor-pointer flex-col gap-1 overflow-hidden rounded-md bg-neutral-800">
-        <li
-          onClick={onEdit}
-          className="block w-full p-2 text-center hover:bg-neutral-700"
-        >
-          Edit
-        </li>
-        <li
-          onClick={onDelete}
-          className="block w-full p-2 text-center text-red-500 hover:bg-neutral-700"
-        >
-          Delete
-        </li>
-      </ul>
-    )}
+    </div>
+    <ul
+      tabIndex={0}
+      className="dropdown-content menu bg-base-100 rounded-box z-1 w-30 shadow-sm"
+    >
+      <li
+        onClick={() => {
+          (document.activeElement as HTMLElement).blur();
+          onEdit();
+        }}
+        className="hover:bg-base-200 rounded-box block w-full cursor-pointer p-2"
+      >
+        Edit
+      </li>
+      <li
+        onClick={() => {
+          (document.activeElement as HTMLElement).blur();
+          onDelete();
+        }}
+        className="hover:bg-base-200 rounded-box block w-full cursor-pointer p-2 text-red-500"
+      >
+        Delete
+      </li>
+    </ul>
   </div>
 );
 
@@ -176,7 +210,7 @@ const MediaGenres = ({ genres = [] }: { genres?: string[] }) => (
 );
 
 const MediaPlot = ({ plot }: { plot: string | undefined }) => (
-  <p className="custom-scrollbar col-span-2 h-full overflow-y-auto break-words pr-2 text-justify text-sm">
+  <p className="custom-scrollbar rounded-box col-span-2 h-full max-h-[10.625rem] overflow-y-auto pr-2 text-justify text-sm break-words shadow-2xl">
     {plot}
   </p>
 );
