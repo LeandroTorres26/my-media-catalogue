@@ -7,7 +7,7 @@ interface MediaCardProps {
   isExpanded: boolean;
   openMediaForm: (edit: boolean, index: number) => void;
   onExpand: () => void;
-  onDelete: (id: string) => void;
+  onDelete: () => void;
 }
 
 export default function MediaCard({
@@ -28,7 +28,7 @@ export default function MediaCard({
         throw new Error("Failed to delete media");
       }
 
-      onDelete(media._id);
+      onDelete();
     } catch (error) {
       console.error("Error deleting media:", error);
     }
@@ -36,7 +36,7 @@ export default function MediaCard({
 
   return (
     <li
-      className={`bg-base-300 text-base-content border-base-100 grid grid-rows-[auto_1fr] overflow-hidden rounded-2xl border transition-all duration-500 ease-in-out sm:grid-cols-[auto_1fr] sm:grid-rows-none ${isExpanded ? "max-h-[850px] sm:max-w-[37.5rem]" : "max-h-[26.8125rem] sm:max-w-[15.625rem]"}`}
+      className={`bg-base-300 text-base-content border-base-100 grid grid-rows-[auto_1fr] overflow-hidden rounded-2xl border transition-all duration-500 ease-in-out sm:grid-cols-[auto_1fr] sm:grid-rows-none ${isExpanded ? "max-h-[850px] sm:max-w-150" : "max-h-[26.8125rem] sm:max-w-[15.625rem]"}`}
     >
       <MediaImage media={media} isExpanded={isExpanded} onExpand={onExpand} />
       <div className="grid max-h-[375px] grid-cols-[1fr_auto] grid-rows-[auto_auto_1fr] items-start gap-2 p-4 sm:min-w-[350px]">

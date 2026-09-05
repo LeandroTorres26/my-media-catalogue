@@ -1,8 +1,9 @@
 "use client";
 import { MediaDocument } from "@/models/Media";
 import { useRef, useState } from "react";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import Image from "next/image";
 import MediaDetailsSection from "./DetailsSection";
+import TmdbSearch, { TmdbResult } from "./TmdbSearch";
 
 interface MediaFormProps {
   onClose: () => void;
@@ -10,8 +11,6 @@ interface MediaFormProps {
   editMode?: boolean;
   mediaToEdit?: MediaDocument | null;
 }
-
-const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_API_KEY;
 
 export default function MediaForm({
   onClose,
@@ -23,16 +22,34 @@ export default function MediaForm({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<boolean>(false);
   const [openMediaDetails, setOpenMediaDetails] = useState(false);
+  const [title, setTitle] = useState<string>(mediaToEdit?.title || "");
+  const [image, setImage] = useState<string | null>(mediaToEdit?.image || null);
   const [category, setCategory] = useState<string>(
     mediaToEdit?.category || "movie",
   );
   const [genres, setGenres] = useState<string[]>(mediaToEdit?.genres || []);
-  const [plot, setPlot] = useState<string | undefined>(mediaToEdit?.plot);
+  const [plot, setPlot] = useState<string>(mediaToEdit?.plot || "");
   const [releaseYear, setReleaseYear] = useState<number | undefined>(
     mediaToEdit?.release_date,
   );
   const [promptLoading, setPromptLoading] = useState(false);
   const [promptError, setPromptError] = useState<string | null>("");
+
+  // A TMDB não distingue anime/documentário de "tv show", então a categoria
+  // escolhida pelo usuário tem prioridade sobre o que a API devolve.
+  const applyTmdbResult = (result: TmdbResult) => {
+    setTitle(result.title);
+    setImage(result.image);
+    if (result.plot) setPlot(result.plot);
+    if (result.release_date) setReleaseYear(result.release_date);
+    if (result.genres.length > 0) {
+      setGenres((current) => [...new Set([...current, ...result.genres])]);
+    }
+    if (category === "movie" && result.category === "tv show") {
+      setCategory("tv show");
+    }
+    setOpenMediaDetails(true);
+  };
 
   const submitMedia = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -44,7 +61,7 @@ export default function MediaForm({
       return value?.trim() === "" ? null : value;
     };
     const mediaData = {
-      title: getValueOrNull(formData.get("title") as string),
+      title: getValueOrNull(title),
       category: category as "movie" | "tv show" | "anime" | "documentary",
       status: getValueOrNull(formData.get("status") as string) as
         | "watching"
@@ -52,15 +69,12 @@ export default function MediaForm({
         | "completed"
         | "dropped"
         | "planning",
-      image: getValueOrNull(formData.get("image") as string),
+      image: image,
       rating:
         formData.get("rating") == null ? null : Number(formData.get("rating")),
       genres: genres,
-      plot: getValueOrNull(formData.get("plot") as string),
-      release_date:
-        formData.get("release_date") === ""
-          ? null
-          : Number(formData.get("release_date")),
+      plot: getValueOrNull(plot),
+      release_date: releaseYear ?? null,
       current_episode: {
         episode: formData.get("episode")
           ? Number(formData.get("episode"))
@@ -91,6 +105,13 @@ export default function MediaForm({
         setSuccess(true);
         setError(null);
         formRef.current.reset();
+        // reset() só limpa os inputs uncontrolled; o state controlado
+        // precisa ser zerado na mão.
+        setTitle("");
+        setImage(null);
+        setPlot("");
+        setReleaseYear(undefined);
+        setGenres([]);
         onRefresh();
         if (method === "PATCH") {
           onClose();
@@ -122,91 +143,48 @@ export default function MediaForm({
 
   const generatePrompt = async (targetInput: string) => {
     setPromptError("");
-    setPromptLoading(true);
-    if (!API_KEY) {
-      setPromptLoading(false);
-      setPromptError("API key not set");
-      return;
-    }
 
-    const titleInput = formRef.current?.elements.namedItem(
-      "title",
-    ) as HTMLInputElement;
-    const titleInputValue = titleInput.value;
-
-    if (!titleInputValue) {
-      setPromptLoading(false);
+    if (!title.trim()) {
       setPromptError("Please provide the title of your media");
       return;
     }
 
-    const genAI = new GoogleGenerativeAI(API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-
-    const generateContent = async (prompt: string) => {
-      try {
-        const result = await model.generateContent(prompt);
-        return result.response.text();
-      } catch (error) {
-        setPromptLoading(false);
-        setPromptError("Error generating content");
-        console.error("Error generating content:", error);
-        throw error;
-      }
-    };
-
-    const parseGenres = (response: string) => {
-      const startIndex = response.indexOf("[");
-      const endIndex = response.lastIndexOf("]");
-      if (startIndex == -1 && endIndex == -1) {
-        return [];
-      }
-      const genresJson = response.slice(startIndex, endIndex + 1);
-      return JSON.parse(genresJson);
-    };
-
+    setPromptLoading(true);
     try {
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          target: targetInput,
+          title,
+          category,
+          plot: plot || undefined,
+          releaseYear,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setPromptError(data.error ?? "Error generating content");
+        return;
+      }
+
       switch (targetInput) {
-        case "genres": {
-          const prompt = `List the genres for the ${category} titled "${titleInputValue}" as a JSON array of strings (only if you find real genres, otherwise return nothing) all lowercase,. ${category === "anime" ? "You can include anime genres." : ""} ${plot ?? ` the synopsis is: ${plot}`} ${releaseYear ?? `the release year is: ${releaseYear}`}.`;
-          const response = await generateContent(prompt);
-          const genresJson = parseGenres(response);
-          if (genresJson.length > 0) {
-            setGenres([...new Set([...genres, ...genresJson])]);
-          } else {
-            setPromptError("Coult not find the genres for this title");
-          }
-          setPromptLoading(false);
+        case "genres":
+          setGenres((current) => [...new Set([...current, ...data.genres])]);
           break;
-        }
-        case "plot": {
-          const prompt = `Write the Synopsis of the ${category} titled "${titleInputValue}".Summarize it in just a paragraph and nothing more. If you cannot find a synopsis just say so.`;
-          const response = await generateContent(prompt);
-          setPromptLoading(false);
-          setPlot(response);
+        case "plot":
+          setPlot(data.plot);
           break;
-        }
-        case "release_date": {
-          const prompt = `Give me the release year of the ${category} titled "${titleInputValue}" as a number in the YYYY format. ${plot ?? `the synopsis is: ${plot}`}`;
-          const response = await generateContent(prompt);
-          const year = parseInt(response, 10);
-          setPromptLoading(false);
-          if (year) {
-            setReleaseYear(year);
-          } else {
-            setPromptError("Could not find the release year for this title");
-          }
-          break;
-        }
-        default:
-          setPromptLoading(false);
-          setPromptError("Invalid target input");
+        case "release_date":
+          setReleaseYear(data.release_date);
           break;
       }
     } catch (error) {
-      setPromptLoading(false);
-      setPromptError("Error when generating the prompt");
       console.error("Error when generating the prompt:", error);
+      setPromptError("Error when generating the prompt");
+    } finally {
+      setPromptLoading(false);
     }
   };
 
@@ -216,7 +194,7 @@ export default function MediaForm({
       onClick={onClose}
     >
       <div
-        className="bg-base-100 text-base-content m-0 mx-auto flex max-h-[90lvh] w-full max-w-[500px] flex-col gap-x-16 gap-y-4 overflow-y-auto rounded-2xl py-4"
+        className="bg-base-100 text-base-content m-0 mx-auto flex max-h-[90lvh] w-full max-w-125 flex-col gap-x-16 gap-y-4 overflow-y-auto rounded-2xl py-4"
         onClick={(e) => e.stopPropagation()}
       >
         <button onClick={onClose} className="mr-4 self-end">
@@ -252,21 +230,41 @@ export default function MediaForm({
           className="custom-scrollbar flex flex-col gap-x-16 gap-y-4 overflow-y-auto px-8"
         >
           <fieldset className="grid content-start items-start gap-6">
+            <TmdbSearch onSelect={applyTmdbResult} />
             <div className="flex flex-col gap-2">
               <label htmlFor="title">Title</label>
               <input
                 type="text"
                 name="title"
-                defaultValue={mediaToEdit?.title}
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
                 className="input w-full"
                 required
               />
             </div>
+            {image && (
+              <div className="flex items-end gap-4">
+                <Image
+                  src={image}
+                  width={80}
+                  height={120}
+                  alt=""
+                  className="h-30 w-20 rounded object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => setImage(null)}
+                  className="btn btn-outline btn-xs"
+                >
+                  Remove poster
+                </button>
+              </div>
+            )}
             <FormSelect
               label="Category"
               name="category"
               options={["movie", "tv show", "anime", "documentary"]}
-              defaultValue={mediaToEdit?.category || "movie"}
+              value={category}
               onChange={(e) => setCategory(e.target.value)}
             />
             <FormSelect
@@ -292,13 +290,15 @@ export default function MediaForm({
             onGenreKeyDown={handleGenreKeyDown}
             onRemoveGenre={handleRemoveGenre}
             plot={plot}
+            onPlotChange={setPlot}
             releaseYear={releaseYear}
+            onReleaseYearChange={setReleaseYear}
             rating={mediaToEdit?.rating}
             category={category}
             season={mediaToEdit?.current_episode?.season}
             episode={mediaToEdit?.current_episode?.episode}
           />
-          <button className="btn btn-outline btn-primary col-span-2 mx-auto min-w-[6rem]">
+          <button className="btn btn-outline btn-primary col-span-2 mx-auto min-w-24">
             {editMode ? "Save" : "Add"}
           </button>
         </form>
@@ -312,12 +312,14 @@ const FormSelect = ({
   name,
   options,
   defaultValue,
+  value,
   onChange,
 }: {
   label: string;
   name: string;
   options: string[];
   defaultValue?: string;
+  value?: string;
   onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void;
 }) => (
   <div className="flex flex-col gap-2">
@@ -325,7 +327,7 @@ const FormSelect = ({
     <select
       name={name}
       className="select w-full capitalize"
-      defaultValue={defaultValue}
+      {...(value !== undefined ? { value } : { defaultValue })}
       onChange={onChange}
     >
       {options.map((option) => (

@@ -8,7 +8,9 @@ export default function MediaDetailsSection({
   onGenreKeyDown,
   onRemoveGenre,
   plot,
+  onPlotChange,
   releaseYear,
+  onReleaseYearChange,
   rating,
   category,
   season,
@@ -22,8 +24,10 @@ export default function MediaDetailsSection({
   genres: string[];
   onGenreKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   onRemoveGenre: (index: number) => void;
-  plot?: string;
+  plot: string;
+  onPlotChange: (value: string) => void;
   releaseYear?: number;
+  onReleaseYearChange: (value: number | undefined) => void;
   rating?: number;
   category: string;
   season?: number;
@@ -95,7 +99,8 @@ export default function MediaDetailsSection({
           <textarea
             name="plot"
             className="textarea min-h-40 w-full"
-            defaultValue={plot}
+            value={plot}
+            onChange={(e) => onPlotChange(e.target.value)}
           />
         </div>
         <div className="col-span-2 row-span-2 grid grid-rows-subgrid gap-2">
@@ -112,11 +117,16 @@ export default function MediaDetailsSection({
             name="release_date"
             min={1900}
             max={new Date().getFullYear()}
-            defaultValue={releaseYear}
+            value={releaseYear ?? ""}
+            onChange={(e) =>
+              onReleaseYearChange(
+                e.target.value === "" ? undefined : Number(e.target.value),
+              )
+            }
             className="input w-full"
           />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 col-span-2">
           <label htmlFor="rating">Rating</label>
           <div className="rating rating-lg rating-half">
             <input

@@ -1,7 +1,8 @@
-import mongoose from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
 export interface MediaDocument {
   _id?: string; // Optional, because MongoDB will add it automatically
+  user: mongoose.Types.ObjectId;
   title: string;
   category: "movie" | "tv show" | "anime" | "documentary";
   status: "watching" | "on hold" | "completed" | "dropped" | "planning";
@@ -18,6 +19,11 @@ export interface MediaDocument {
 
 const MediaSchema = new mongoose.Schema<MediaDocument>(
   {
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
     title: { type: String, required: true },
     category: {
       type: String,
@@ -42,6 +48,8 @@ const MediaSchema = new mongoose.Schema<MediaDocument>(
   { timestamps: true },
 );
 
+MediaSchema.index({ user: 1, createdAt: -1 });
+
 const Media =
-  mongoose.models.Media<MediaDocument> || mongoose.model("Media", MediaSchema);
+  mongoose.models.Media || mongoose.model<MediaDocument>("Media", MediaSchema);
 export default Media;

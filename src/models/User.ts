@@ -4,7 +4,6 @@ export interface UserDocument extends Document {
   email: string;
   password: string;
   name: string;
-  medias?: mongoose.Types.ObjectId[];
 }
 
 const UserSchema: Schema = new mongoose.Schema<UserDocument>(
@@ -26,7 +25,6 @@ const UserSchema: Schema = new mongoose.Schema<UserDocument>(
       type: String,
       required: [true, "Name is required"],
     },
-    medias: [{ type: Schema.Types.ObjectId, ref: "Media" }],
   },
   { timestamps: true },
 );
