@@ -5,7 +5,6 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { MediaDocument } from "@/models/Media";
 import MediaForm from "@/components/mediaForm/MediaForm";
-import { set } from "mongoose";
 
 export default function Catalogue() {
   const { status, data: session } = useSession();
@@ -53,7 +52,7 @@ export default function Catalogue() {
           param.append("orderby", orderBy);
         }
         const query = param.toString();
-        let url = query ? `/api/user/medias?${query}` : "/api/user/medias";
+        const url = query ? `/api/user/medias?${query}` : "/api/user/medias";
         const res = await fetch(url);
         if (!res.ok) throw new Error("Failed to fetch user medias");
         const medias = await res.json();

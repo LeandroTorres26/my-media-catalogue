@@ -29,7 +29,7 @@ export default function Login() {
     <div className="grid h-screen w-full place-items-center px-4">
       <form
         onSubmit={loginUser}
-        className="bg-base-100 grid w-full max-w-[25rem] gap-6 self-center rounded-2xl px-6 py-4"
+        className="bg-base-100 grid w-full max-w-100 gap-6 self-center rounded-2xl px-6 py-4"
       >
         {error && <div className="text-black">{error}</div>}
         <h1 className="justify-self-center text-2xl">Sign In</h1>

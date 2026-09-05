@@ -1,21 +1,17 @@
 import connect from "@/lib/mongoose";
-import mongoose from "mongoose";
-import User from "@/models/User";
-import Media, { MediaDocument } from "@/models/Media";
+import Media from "@/models/Media";
 import { getToken } from "next-auth/jwt";
-import { NextResponse } from "next/server";
-import { NextApiRequest } from "next";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(request: NextApiRequest) {
+export async function GET(request: NextRequest) {
   try {
     await connect();
-    mongoose.model<MediaDocument>("Media", Media.schema);
     const token = await getToken({ req: request });
     if (!token) {
       return NextResponse.json({ error: "Not authorized" }, { status: 401 });
     }
 
-    const urlParams = new URLSearchParams(request.url?.split("?")[1] || "");
+    const urlParams = request.nextUrl.searchParams;
     const searchTerm = urlParams.get("search");
     const category = urlParams.get("category");
     const orderBy = urlParams.get("orderby");
@@ -63,17 +59,11 @@ export async function GET(request: NextApiRequest) {
       }
     }
 
-    const user = await User.findOne({ email: token.email }).populate({
-      path: "medias",
-      match: matchQuery,
-      options: { sort: sortQuery },
-    });
+    const medias = await Media.find({ user: token.sub, ...matchQuery }).sort(
+      sortQuery,
+    );
 
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    return NextResponse.json(user.medias);
+    return NextResponse.json(medias);
   } catch (error) {
     console.error(error);
     return NextResponse.json(
