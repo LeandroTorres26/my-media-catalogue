@@ -4,20 +4,15 @@ import { useRef, useState } from "react";
 import Image from "next/image";
 import MediaDetailsSection from "./DetailsSection";
 import TmdbSearch, { TmdbResult } from "./TmdbSearch";
+import { useCatalogueStore } from "@/stores/catalogueStore";
 
-interface MediaFormProps {
-  onClose: () => void;
-  onRefresh: () => void;
-  editMode?: boolean;
-  mediaToEdit?: MediaDocument | null;
-}
+export default function MediaForm() {
+  const mediaToEdit = useCatalogueStore((state) => state.mediaToEdit);
+  const closeForm = useCatalogueStore((state) => state.closeForm);
+  const loadMedias = useCatalogueStore((state) => state.loadMedias);
 
-export default function MediaForm({
-  onClose,
-  onRefresh,
-  editMode,
-  mediaToEdit,
-}: MediaFormProps) {
+  const editMode = mediaToEdit !== null;
+
   const formRef = useRef<HTMLFormElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<boolean>(false);
@@ -35,8 +30,6 @@ export default function MediaForm({
   const [promptLoading, setPromptLoading] = useState(false);
   const [promptError, setPromptError] = useState<string | null>("");
 
-  // A TMDB não distingue anime/documentário de "tv show", então a categoria
-  // escolhida pelo usuário tem prioridade sobre o que a API devolve.
   const applyTmdbResult = (result: TmdbResult) => {
     setTitle(result.title);
     setImage(result.image);
@@ -112,9 +105,8 @@ export default function MediaForm({
         setPlot("");
         setReleaseYear(undefined);
         setGenres([]);
-        onRefresh();
         if (method === "PATCH") {
-          onClose();
+          closeForm();
         } else {
           setTimeout(() => setSuccess(false), 2000);
         }
@@ -191,13 +183,13 @@ export default function MediaForm({
   return (
     <dialog
       className="backdrop fixed inset-0 z-50 grid size-full items-center bg-transparent"
-      onClick={onClose}
+      onClick={closeForm}
     >
       <div
         className="bg-base-100 text-base-content m-0 mx-auto flex max-h-[90lvh] w-full max-w-125 flex-col gap-x-16 gap-y-4 overflow-y-auto rounded-2xl py-4"
         onClick={(e) => e.stopPropagation()}
       >
-        <button onClick={onClose} className="mr-4 self-end">
+        <button onClick={closeForm} className="mr-4 self-end">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             id="Outline"
