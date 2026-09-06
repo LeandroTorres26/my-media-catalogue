@@ -1,34 +1,32 @@
+"use client";
+
 import Image from "next/image";
 import { MediaDocument } from "@/models/Media";
+import { useCatalogueStore } from "@/stores/catalogueStore";
 
 interface MediaCardProps {
   media: MediaDocument;
-  index: number;
   isExpanded: boolean;
-  openMediaForm: (edit: boolean, index: number) => void;
   onExpand: () => void;
-  onDelete: () => void;
 }
 
 export default function MediaCard({
   isExpanded,
   onExpand,
   media,
-  index,
-  openMediaForm,
-  onDelete,
 }: MediaCardProps) {
+  const openEditForm = useCatalogueStore((state) => state.openEditForm);
+  const loadMedias = useCatalogueStore((state) => state.loadMedias);
+
   const handleDelete = async () => {
     try {
       const response = await fetch(`/api/media/${media._id}`, {
         method: "DELETE",
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to delete media");
-      }
+      if (!response.ok) throw new Error("Failed to delete media");
 
-      onDelete();
+      loadMedias();
     } catch (error) {
       console.error("Error deleting media:", error);
     }
@@ -41,14 +39,7 @@ export default function MediaCard({
       <MediaImage media={media} isExpanded={isExpanded} onExpand={onExpand} />
       <div className="grid max-h-[375px] grid-cols-[1fr_auto] grid-rows-[auto_auto_1fr] items-start gap-2 p-4 sm:min-w-[350px]">
         <MediaInfo media={media} />
-        <CardMenu
-          onEdit={() => {
-            openMediaForm(true, index);
-          }}
-          onDelete={() => {
-            handleDelete();
-          }}
-        />
+        <CardMenu onEdit={() => {openEditForm(media)}} onDelete={() => {handleDelete()}} />
         <MediaGenres genres={media.genres} />
         <MediaPlot plot={media.plot} />
       </div>
