@@ -5,6 +5,9 @@ import "./globals.css";
 import { Provider } from "./provider";
 import Header from "@/components/header/Header";
 
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+
 const RobotoSans = Roboto({
   variable: "--font-Roboto-sans",
   subsets: ["latin"],
@@ -21,21 +24,22 @@ export const metadata: Metadata = {
     "A personal catalogue for all the different media that I consume e.g movies, tv shows, animes etc",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await getServerSession(authOptions);
   return (
     <html lang="en">
-      <Provider>
-        <body
-          className={`${RobotoSans.variable} ${RobotoMono.variable} h-full font-[family-name:var(--font-Roboto-sans)] antialiased`}
-        >
-          <Header />
-          {children}
-        </body>
-      </Provider>
+      <body
+        className={`${RobotoSans.variable} ${RobotoMono.variable} h-full font-[family-name:var(--font-Roboto-sans)] antialiased`}
+      >
+        <Provider session={session}>
+            <Header />
+            {children}
+        </Provider>
+      </body>
     </html>
   );
 }
