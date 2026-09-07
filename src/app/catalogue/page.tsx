@@ -59,6 +59,14 @@ const CatalogueControls = () => (
 
 const SearchInput = () => {
   const setSearchTerm = useCatalogueStore((state) => state.setSearchTerm);
+  const [value, setValue] = useState("");
+
+  useEffect(() => {
+    const delayDebounce = setTimeout(() => {
+      setSearchTerm(value);
+    }, 300);
+    return () => clearTimeout(delayDebounce);
+  }, [value, setSearchTerm]);
 
   return (
     <div className="col-span-2 grid grid-cols-subgrid items-center gap-2">
@@ -68,7 +76,8 @@ const SearchInput = () => {
         name="search"
         placeholder="e.g The Godfather"
         className="input"
-        onChange={(e) => {setSearchTerm(e.target.value)}}
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
       />
     </div>
   )
