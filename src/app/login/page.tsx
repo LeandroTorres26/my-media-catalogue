@@ -4,12 +4,23 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 import Link from "next/link";
+
+const ERROR_MESSAGES: Record<string, string> = {
+  CredentialsSignin: "Invalid email or password.",
+};
+
 export default function Login() {
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const router = useRouter();
-  const loginUser = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+
+ const loginUser = async (event: React.FormEvent<HTMLFormElement>) => {
+  event.preventDefault();
+  setError("");
+  setSubmitting(true);
+
+  try {
     const formData = new FormData(event.currentTarget);
     const res = await signIn("credentials", {
       email: formData.get("email"),
@@ -17,21 +28,24 @@ export default function Login() {
       redirect: false,
     });
 
-    if (res?.error) {
-      setError(res.error as string);
-    }
-
     if (res?.ok) {
       return router.push("/catalogue");
     }
-  };
+
+    setError(ERROR_MESSAGES[res?.error ?? ""] ?? "Something went wrong. Please try again.");
+  } catch {
+    setError("Something went wrong. Please try again.");
+  }
+  setSubmitting(false);
+};
+
   return (
     <div className="grid h-screen w-full place-items-center px-4">
       <form
         onSubmit={loginUser}
         className="bg-base-100 grid w-full max-w-100 gap-6 self-center rounded-2xl px-6 py-4"
       >
-        {error && <div className="text-black">{error}</div>}
+        {error && <div className="text-error text-sm text-center">{error}</div>}
         <h1 className="justify-self-center text-2xl">Sign In</h1>
         <div className="flex flex-col gap-2">
           <label htmlFor="email">Email</label>
@@ -102,8 +116,10 @@ export default function Login() {
         </div>
 
         <div className="flex flex-col items-center">
-          <button className="btn btn-primary">Sign Up</button>
-          <Link href="/register" className="btn btn-link btn-neutral">
+          <button className="btn btn-primary" disabled={submitting}>
+            {submitting ? <span className="loading loading-spinner loading-xs" /> : "Sign In"}
+          </button>
+          <Link href="/register" className="btn btn-link btn-neutral text-white">
             Do not have an account?
           </Link>
         </div>

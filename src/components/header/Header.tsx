@@ -22,7 +22,11 @@ export default function Header() {
         </button>
       );
     } else if (status === "loading") {
-      return <span className="mt-7 text-sm text-[#888]">Loading...</span>;
+      return (
+        <button className="btn btn-outline btn-primary" disabled>
+          <span className="loading loading-spinner loading-xs"></span>
+        </button>
+      );
     } else {
       return (
         <Link href="/login" className="btn btn-outline btn-primary">

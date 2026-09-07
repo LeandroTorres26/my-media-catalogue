@@ -30,7 +30,7 @@ export default function Register() {
         onSubmit={registerUser}
         className="bg-base-100 grid w-full max-w-100 gap-6 self-center rounded-2xl px-6 py-4"
       >
-        <h1 className="justify-self-center text-2xl">Sign Up</h1>
+        <h1 className="justify-self-center text-2xl"></h1>
         <div className="flex flex-col gap-2">
           <label htmlFor="name">Username</label>
           <label className="input validator">
@@ -139,8 +139,8 @@ export default function Register() {
         </div>
 
         <div className="flex flex-col items-center">
-          <button className="btn btn-primary">Sign In</button>
-          <Link href="/login" className="btn btn-link btn-neutral">
+          <button className="btn btn-primary">Sign Up</button>
+          <Link href="/login" className="btn btn-link btn-neutral text-white">
             Already have an account?
           </Link>
         </div>
