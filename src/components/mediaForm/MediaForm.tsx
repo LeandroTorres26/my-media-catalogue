@@ -121,9 +121,9 @@ export default function MediaForm() {
   const handleGenreKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      const value = e.currentTarget.value.trim();
+      const value = e.currentTarget.value.trim().toLowerCase();
       if (value) {
-        setGenres([...genres, value]);
+        setGenres((current) => [...new Set([...current, value])]);
         e.currentTarget.value = "";
       }
     }
