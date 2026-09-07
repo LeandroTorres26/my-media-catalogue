@@ -59,7 +59,7 @@ export default function TmdbSearch({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => {
-            // Sem isso, Enter aqui dispara o submit do form inteiro.
+            // Without this, Enter here submits the whole form.
             if (e.key === "Enter") {
               e.preventDefault();
               search();

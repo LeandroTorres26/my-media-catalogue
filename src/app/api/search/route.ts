@@ -17,8 +17,8 @@ interface TmdbSearchResult {
   first_air_date?: string;
 }
 
-// TMDB devolve gêneros como ids; o mapa id -> nome muda raramente,
-// então vale guardar em memória em vez de buscar a cada request.
+// TMDB returns genres as ids; the id -> name map rarely changes,
+// so it's worth keeping it in memory instead of fetching on every request.
 let genreCache: Map<number, string> | null = null;
 
 async function getGenreMap(): Promise<Map<number, string>> {
@@ -39,8 +39,8 @@ async function getGenreMap(): Promise<Map<number, string>> {
     map.set(genre.id, String(genre.name).toLowerCase());
   }
 
-  // Só cacheia se realmente veio algo, pra uma falha temporária
-  // não congelar um mapa vazio pelo resto da vida do processo.
+  // Only cache if something actually came back, so a temporary failure
+  // doesn't freeze an empty map for the rest of the process lifetime.
   if (map.size > 0) genreCache = map;
   return map;
 }
@@ -48,12 +48,12 @@ async function getGenreMap(): Promise<Map<number, string>> {
 export async function GET(request: NextRequest) {
   const token = await getToken({ req: request });
   if (!token) {
-    return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+    return NextResponse.json({ error: "Not authorized" }, { status: 401 });
   }
 
   if (!TMDB_API_KEY) {
     return NextResponse.json(
-      { error: "TMDB_API_KEY não configurada" },
+      { error: "TMDB_API_KEY not configured" },
       { status: 500 },
     );
   }
@@ -98,7 +98,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error(error);
     return NextResponse.json(
-      { error: "Erro ao buscar na TMDB" },
+      { error: "Error searching TMDB" },
       { status: 502 },
     );
   }
