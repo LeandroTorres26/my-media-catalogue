@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
   try {
     const token = await getToken({ req: request });
     if (!token) {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+      return NextResponse.json({ error: "Not authorized" }, { status: 401 });
     }
 
     const {
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(media, { status: 201 });
   } catch {
     return NextResponse.json(
-      { error: "Ocorreu um erro ao cadastrar a mídia." },
+      { error: "Error creating media" },
       { status: 500 },
     );
   }

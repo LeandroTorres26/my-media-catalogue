@@ -32,12 +32,12 @@ function parseGenres(response: string): string[] {
 export async function POST(request: NextRequest) {
   const token = await getToken({ req: request });
   if (!token) {
-    return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+    return NextResponse.json({ error: "Not authorized" }, { status: 401 });
   }
 
   if (!GOOGLE_API_KEY) {
     return NextResponse.json(
-      { error: "GOOGLE_API_KEY não configurada" },
+      { error: "GOOGLE_API_KEY not configured" },
       { status: 500 },
     );
   }

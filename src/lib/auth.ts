@@ -3,8 +3,8 @@ import connect from "@/lib/mongoose";
 import User from "@/models/User";
 import bcrypt from "bcryptjs";
 
-// Fica fora da route handler porque o App Router só permite que uma rota
-// exporte métodos HTTP — exportar authOptions de lá quebra o build.
+// Lives outside the route handler because the App Router only lets a route
+// export HTTP methods — exporting authOptions from there breaks the build.
 export const authOptions = {
   providers: [
     CredentialsProvider({

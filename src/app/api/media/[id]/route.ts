@@ -23,7 +23,7 @@ export async function GET(
   try {
     const token = await getToken({ req: request });
     if (!token) {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+      return NextResponse.json({ error: "Not authorized" }, { status: 401 });
     }
 
     const { id } = await params;
@@ -51,7 +51,7 @@ export async function PATCH(
   try {
     const token = await getToken({ req: request });
     if (!token) {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+      return NextResponse.json({ error: "Not authorized" }, { status: 401 });
     }
 
     const { id } = await params;
@@ -91,7 +91,7 @@ export async function DELETE(
   try {
     const token = await getToken({ req: request });
     if (!token) {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+      return NextResponse.json({ error: "Not authorized" }, { status: 401 });
     }
 
     const { id } = await params;

@@ -98,8 +98,8 @@ export default function MediaForm() {
         setSuccess(true);
         setError(null);
         formRef.current.reset();
-        // reset() só limpa os inputs uncontrolled; o state controlado
-        // precisa ser zerado na mão.
+        // reset() only clears uncontrolled inputs; controlled state has to
+        // be cleared by hand.
         setTitle("");
         setImage(null);
         setPlot("");
