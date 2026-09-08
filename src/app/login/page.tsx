@@ -119,7 +119,7 @@ export default function Login() {
           <button className="btn btn-primary" disabled={submitting}>
             {submitting ? <span className="loading loading-spinner loading-xs" /> : "Sign In"}
           </button>
-          <Link href="/register" className="btn btn-link btn-neutral text-white">
+          <Link href="/register" className="btn btn-link text-base-content">
             Do not have an account?
           </Link>
         </div>

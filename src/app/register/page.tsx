@@ -140,7 +140,7 @@ export default function Register() {
 
         <div className="flex flex-col items-center">
           <button className="btn btn-primary">Sign Up</button>
-          <Link href="/login" className="btn btn-link btn-neutral text-white">
+          <Link href="/login" className="btn btn-link text-base-content">
             Already have an account?
           </Link>
         </div>
