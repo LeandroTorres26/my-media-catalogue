@@ -201,7 +201,7 @@ const MediaGenres = ({ genres = [] }: { genres?: string[] }) => (
 );
 
 const MediaPlot = ({ plot }: { plot: string | undefined }) => (
-  <p className="custom-scrollbar rounded-box col-span-2 h-full max-h-[10.625rem] overflow-y-auto pr-2 text-justify text-sm break-words shadow-2xl">
+  <p className="custom-scrollbar rounded-box col-span-2 h-full max-h-[10.625rem] overflow-y-auto pr-2 text-justify text-sm break-words">
     {plot}
   </p>
 );
