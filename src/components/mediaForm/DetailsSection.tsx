@@ -1,37 +1,23 @@
-export default function MediaDetailsSection({
+import { FormAction, FormState, hasRating } from "./formReducer";
+
+const RATING_STEPS = Array.from({ length: 10 }, (_, i) => i + 1);
+
+export default function DetailsSection({
+  form,
+  dispatch,
   open,
   onToggle,
   generatePrompt,
   promptLoading,
   promptError,
-  genres,
-  onGenreKeyDown,
-  onRemoveGenre,
-  plot,
-  onPlotChange,
-  releaseYear,
-  onReleaseYearChange,
-  rating,
-  category,
-  season,
-  episode,
 }: {
+  form: FormState;
+  dispatch: React.Dispatch<FormAction>;
   open: boolean;
   onToggle: () => void;
   generatePrompt: (targetInput: string) => void;
   promptLoading: boolean;
   promptError: string | null;
-  genres: string[];
-  onGenreKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
-  onRemoveGenre: (index: number) => void;
-  plot: string;
-  onPlotChange: (value: string) => void;
-  releaseYear?: number;
-  onReleaseYearChange: (value: number | undefined) => void;
-  rating?: number;
-  category: string;
-  season?: number;
-  episode?: number;
 }) {
   return (
     <fieldset className="bg-base-200 my-4 grid content-start items-start rounded-md">
@@ -52,7 +38,7 @@ export default function MediaDetailsSection({
         </svg>
       </legend>
       <div
-        className={`grid grid-cols-2 gap-6 overflow-hidden px-4 transition-all duration-1000 ease-in-out ${open ? "max-h-[999px] py-6" : "max-h-0"}`}
+        className={`grid grid-cols-2 gap-6 overflow-hidden px-4 transition-all duration-1000 ease-in-out ${open ? "max-h-249.75 py-6" : "max-h-0"}`}
       >
         {promptError && (
           <p className="text-error col-span-2 text-center">{promptError}</p>
@@ -67,19 +53,18 @@ export default function MediaDetailsSection({
             />
           </div>
           <input
+            className="input w-full"
             type="text"
             name="genres"
-            placeholder=""
-            className="input w-full"
-            onKeyDown={onGenreKeyDown}
+            onKeyDown={(e) => dispatch({ type: "addGenre", genre: e.currentTarget.value })}
           />
-          {genres.length > 0 && (
+          {form.genres.length > 0 && (
             <ul className="flex flex-wrap gap-2">
-              {genres.map((genre, index) => (
+              {form.genres.map((genre, index) => (
                 <li
-                  key={index}
-                  onClick={() => onRemoveGenre(index)}
                   className="cursor-pointer rounded-full border px-2 py-1 capitalize hover:border-red-500 hover:text-red-500"
+                  key={genre}
+                  onClick={() => dispatch({ type: "removeGenre", index })}
                 >
                   {genre}
                 </li>
@@ -99,8 +84,8 @@ export default function MediaDetailsSection({
           <textarea
             name="plot"
             className="textarea min-h-40 w-full"
-            value={plot}
-            onChange={(e) => onPlotChange(e.target.value)}
+            value={form.plot}
+            onChange={(e) => dispatch({ type: "setField", field: "plot", value: e.target.value })}
           />
         </div>
         <div className="col-span-2 row-span-2 grid grid-rows-subgrid gap-2">
@@ -117,128 +102,35 @@ export default function MediaDetailsSection({
             name="release_date"
             min={1900}
             max={new Date().getFullYear()}
-            value={releaseYear ?? ""}
-            onChange={(e) =>
-              onReleaseYearChange(
-                e.target.value === "" ? undefined : Number(e.target.value),
-              )
-            }
+            value={form.releaseYear ?? ""}
+            onChange={(e) => dispatch({ type: "setField", field: "releaseYear", value: e.target.value === "" ? undefined : Number(e.target.value) })}
             className="input w-full"
           />
         </div>
-        <div className="flex items-center gap-2 col-span-2">
-          <label htmlFor="rating">Rating</label>
-          <div className="rating rating-lg rating-half">
-            <input
-              type="radio"
-              name="rating"
-              className="rating-hidden"
-              defaultChecked={rating === 0}
-              value={0}
-            />
-            <input
-              type="radio"
-              name="rating"
-              className="mask mask-star-2 mask-half-1 bg-primary"
-              aria-label="0.5 star"
-              defaultChecked={rating === 1}
-              value={1}
-            />
-            <input
-              type="radio"
-              name="rating"
-              className="mask mask-star-2 mask-half-2 bg-primary"
-              aria-label="1 star"
-              defaultChecked={rating === 2}
-              value={2}
-            />
-            <input
-              type="radio"
-              name="rating"
-              className="mask mask-star-2 mask-half-1 bg-primary"
-              aria-label="1.5 star"
-              defaultChecked={rating === 3}
-              value={3}
-            />
-            <input
-              type="radio"
-              name="rating"
-              className="mask mask-star-2 mask-half-2 bg-primary"
-              aria-label="2 star"
-              defaultChecked={rating === 4}
-              value={4}
-            />
-            <input
-              type="radio"
-              name="rating"
-              className="mask mask-star-2 mask-half-1 bg-primary"
-              aria-label="2.5 star"
-              defaultChecked={rating === 5}
-              value={5}
-            />
-            <input
-              type="radio"
-              name="rating"
-              className="mask mask-star-2 mask-half-2 bg-primary"
-              aria-label="3 star"
-              defaultChecked={rating === 6}
-              value={6}
-            />
-            <input
-              type="radio"
-              name="rating"
-              className="mask mask-star-2 mask-half-1 bg-primary"
-              aria-label="3.5 star"
-              defaultChecked={rating === 7}
-              value={7}
-            />
-            <input
-              type="radio"
-              name="rating"
-              className="mask mask-star-2 mask-half-2 bg-primary"
-              aria-label="4 star"
-              defaultChecked={rating === 8}
-              value={8}
-            />
-            <input
-              type="radio"
-              name="rating"
-              className="mask mask-star-2 mask-half-1 bg-primary"
-              aria-label="4.5 star"
-              defaultChecked={rating === 9}
-              value={9}
-            />
-            <input
-              type="radio"
-              name="rating"
-              className="mask mask-star-2 mask-half-2 bg-primary"
-              aria-label="5 star"
-              defaultChecked={rating === 10}
-              value={10}
-            />
+        {hasRating(form) && (
+          <div className="flex items-center gap-2 col-span-2">
+            <label htmlFor="rating">Rating</label>
+            <div className="rating rating-lg rating-half">
+              <input
+                className="rating-hidden"
+                type="radio"
+                name="rating"
+                checked={form.rating === undefined}
+                onChange={() => dispatch({type: "setField", field: "rating", value: undefined})}
+              />
+              {RATING_STEPS.map((value) => (
+                <input
+                  className={`mask mask-star-2 ${value % 2 === 1 ? "mask-half-1" : "mask-half-2"} bg-primary`}
+                  key={value}
+                  type="radio"
+                  name="rating"
+                  aria-label={`${value / 2} star`}
+                  checked={form.rating === value}
+                  onChange={() => dispatch({type: "setField", field: "rating", value})}
+                />
+              ))}
+            </div>
           </div>
-        </div>
-        {category !== "movie" && (
-          <>
-            <div className="row-span-2 grid grid-rows-subgrid gap-2">
-              <label htmlFor="season">Season</label>
-              <input
-                type="number"
-                name="season"
-                defaultValue={season}
-                className="input w-full"
-              />
-            </div>
-            <div className="row-span-2 grid grid-rows-subgrid gap-2">
-              <label htmlFor="episode">Episode</label>
-              <input
-                type="number"
-                name="episode"
-                defaultValue={episode}
-                className="input w-full"
-              />
-            </div>
-          </>
         )}
       </div>
     </fieldset>
@@ -259,7 +151,7 @@ const AiGeneratorButton = ({
       e.preventDefault();
       generatePrompt(targetInput);
     }}
-    className={`btn btn-secondary btn-xs flex gap-1`}
+    className={`btn btn-ghost btn-xs gap-1 opacity-60 hover:opacity-100`}
     disabled={promptLoading}
   >
     {promptLoading ? (
