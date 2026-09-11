@@ -62,7 +62,7 @@ export default function DetailsSection({
             <ul className="flex flex-wrap gap-2">
               {form.genres.map((genre, index) => (
                 <li
-                  className="cursor-pointer rounded-full border px-2 py-1 capitalize hover:border-red-500 hover:text-red-500"
+                  className="cursor-pointer rounded-full border px-2 py-1 text-xs capitalize hover:border-red-500 hover:text-red-500"
                   key={genre}
                   onClick={() => dispatch({ type: "removeGenre", index })}
                 >

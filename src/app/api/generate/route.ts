@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
+import { AiError, generateJSON } from "@/lib/ai";
 
 interface GenerateBody {
   target: "genres" | "plot" | "release_date";
@@ -12,34 +10,10 @@ interface GenerateBody {
   releaseYear?: number;
 }
 
-function parseGenres(response: string): string[] {
-  const start = response.indexOf("[");
-  const end = response.lastIndexOf("]");
-  if (start === -1 || end === -1) return [];
-
-  try {
-    const parsed = JSON.parse(response.slice(start, end + 1));
-    return Array.isArray(parsed)
-      ? parsed
-          .filter((genre): genre is string => typeof genre === "string")
-          .map((genre) => genre.toLowerCase())
-      : [];
-  } catch {
-    return [];
-  }
-}
-
 export async function POST(request: NextRequest) {
   const token = await getToken({ req: request });
   if (!token) {
     return NextResponse.json({ error: "Not authorized" }, { status: 401 });
-  }
-
-  if (!GOOGLE_API_KEY) {
-    return NextResponse.json(
-      { error: "GOOGLE_API_KEY not configured" },
-      { status: 500 },
-    );
   }
 
   const { target, title, category, plot, releaseYear }: GenerateBody =
@@ -52,21 +26,21 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Contexto opcional: só entra no prompt quando existe de verdade.
   const plotHint = plot ? ` The synopsis is: ${plot}` : "";
   const yearHint = releaseYear ? ` The release year is: ${releaseYear}` : "";
 
   try {
-    const genAI = new GoogleGenerativeAI(GOOGLE_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-3.6-flash" });
-
     switch (target) {
       case "genres": {
-        const prompt = `List the genres for the ${category} titled "${title}" as a JSON array of strings (only if you find real genres, otherwise return nothing) all lowercase.${category === "anime" ? " You can include anime genres." : ""}${plotHint}${yearHint}`;
-        const result = await model.generateContent(prompt);
-        const genres = parseGenres(result.response.text());
+        const { genres } = await generateJSON<{ genres: string[] }>(`
+          List the genres for the ${category} titled "${title}".
+          ${category === "anime" ? " Include anime-specific genres." : ""}
+          ${plotHint}${yearHint}
+          Reply as {"genres": ["genre one", "genre two"]} with lowercase names.
+          If you don't recognize the title, reply {"genres": []}.
+        `,);
 
-        if (genres.length === 0) {
+        if (!Array.isArray(genres)) {
           return NextResponse.json(
             { error: "Could not find the genres for this title" },
             { status: 404 },
@@ -76,23 +50,34 @@ export async function POST(request: NextRequest) {
       }
 
       case "plot": {
-        const prompt = `Write the synopsis of the ${category} titled "${title}". Summarize it in just a paragraph and nothing more. If you cannot find a synopsis just say so.`;
-        const result = await model.generateContent(prompt);
-        return NextResponse.json({ plot: result.response.text().trim() });
+        const { plot: synopsis } = await generateJSON<{ plot: string }>(`
+          Write a one-paragraph synopsis of the ${category} titled "${title}".
+          Reply as {"plot": "the synopsis"}.
+          If you don't recognize the title, reply {"plot": ""}.
+        `,)
+        if(!synopsis.trim()) {
+          return NextResponse.json(
+            { error: "Could not find a synopsis for this title" },
+            { status: 404}
+          )
+        }
+        return NextResponse.json({ plot: synopsis.trim() });
       }
 
       case "release_date": {
-        const prompt = `Give me the release year of the ${category} titled "${title}" as a number in the YYYY format.${plotHint}`;
-        const result = await model.generateContent(prompt);
-        const year = parseInt(result.response.text(), 10);
+        const { release_date } = await generateJSON<{ release_date: string }>(`
+          Give the release year of the ${category} titled "${title}".${plotHint}
+          Reply as {"release_date": 1999} using a four-digit number.
+          If you don't recognize the title, reply {"release_date": null}.
+        `,);
 
-        if (!year) {
+        if (!release_date) {
           return NextResponse.json(
             { error: "Could not find the release year for this title" },
             { status: 404 },
           );
         }
-        return NextResponse.json({ release_date: year });
+        return NextResponse.json({ release_date });
       }
 
       default:
@@ -103,9 +88,16 @@ export async function POST(request: NextRequest) {
     }
   } catch (error) {
     console.error(error);
+    const upstream = error instanceof AiError ? error.status : undefined;
+    const status = upstream === 429 || upstream === 503 ? upstream : 502;
     return NextResponse.json(
-      { error: "Error generating content" },
-      { status: 502 },
+      {
+        error: "Error generating content",
+        ...(process.env.NODE_ENV === "development" && {
+          detail: error instanceof Error ? error.message : String(error),
+        }),
+      },
+      { status },
     );
   }
 }
