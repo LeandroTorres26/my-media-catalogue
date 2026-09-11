@@ -8,6 +8,12 @@ import IdentitySection from "./IdentitySection";
 import ProgressSection from "./ProgressSection";
 import DetailsSection from "./DetailsSection";
 
+const PROMPT_ERRORS: Record<number, string> = {
+  429: "Too many requests. Try again in a minute.",
+  503: "The AI service is busy. Try again in a few seconds.",
+  502: "Could not reach the AI service.",
+};
+
 export default function MediaForm() {
   const mediaToEdit = useCatalogueStore((state) => state.mediaToEdit);
   const closeForm = useCatalogueStore((state) => state.closeForm);
@@ -112,7 +118,7 @@ export default function MediaForm() {
 
       const data = await res.json();
       if (!res.ok) {
-        setPromptError(data.error ?? "Error generating content");
+        setPromptError(PROMPT_ERRORS[res.status] ?? data.error ?? "Error generating content",);
         return;
       }
 
