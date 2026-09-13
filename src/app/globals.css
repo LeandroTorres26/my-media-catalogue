@@ -1,6 +1,11 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
+@custom-variant theme-light (
+  &:where(:root:has(input.theme-controller[value="light"]:checked) *),
+  &:where([data-theme="light"] *)
+);
+
 @plugin "daisyui/theme" {
   name: "dark";
   default: true;

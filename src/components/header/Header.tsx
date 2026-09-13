@@ -3,6 +3,12 @@
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+
+// The primary yellow reads poorly as outline text on the light theme's white
+// background, so the button fills in there instead of staying outlined.
+const AUTH_BUTTON =
+  "btn btn-outline btn-primary theme-light:bg-primary theme-light:text-primary-content theme-light:hover:bg-primary/85";
+
 export default function Header() {
   const { status } = useSession();
   const router = useRouter();
@@ -11,7 +17,7 @@ export default function Header() {
     if (status === "authenticated") {
       return (
         <button
-          className="btn btn-outline btn-primary"
+          className={AUTH_BUTTON}
           onClick={() => {
             signOut({ redirect: false }).then(() => {
               router.push("/");
@@ -23,21 +29,21 @@ export default function Header() {
       );
     } else if (status === "loading") {
       return (
-        <button className="btn btn-outline btn-primary" disabled>
+        <button className={AUTH_BUTTON} disabled>
           <span className="loading loading-spinner loading-xs"></span>
         </button>
       );
     } else {
       return (
-        <Link href="/login" className="btn btn-outline btn-primary">
+        <Link href="/login" className={AUTH_BUTTON}>
           Sign In
         </Link>
       );
     }
   };
   return (
-    <header className="fixed top-0 flex w-full justify-end px-8 py-4 text-xl">
-      <nav className="flex w-fit items-center gap-8">
+    <header className="border-base-content/10 bg-base-200 fixed top-0 z-40 w-full border-b text-xl">
+      <nav className="container mx-auto flex items-center justify-end gap-8 px-8 py-4">
         <label className="swap swap-rotate">
           <input type="checkbox" className="theme-controller" value="light" />
 

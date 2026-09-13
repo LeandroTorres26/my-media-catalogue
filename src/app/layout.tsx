@@ -4,6 +4,7 @@ import "./globals.css";
 
 import { Provider } from "./provider";
 import Header from "@/components/header/Header";
+import Footer from "@/components/footer/Footer";
 
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -38,6 +39,7 @@ export default async function RootLayout({
         <Provider session={session}>
             <Header />
             {children}
+            <Footer />
         </Provider>
       </body>
     </html>
