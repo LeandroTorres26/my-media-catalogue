@@ -13,6 +13,7 @@ export default function Catalogue() {
 
   const searchTerm = useCatalogueStore((state) => state.searchTerm);
   const categoryFilter = useCatalogueStore((state) => state.categoryFilter);
+  const statusFilter = useCatalogueStore((state) => state.statusFilter);
   const orderBy = useCatalogueStore((state) => state.orderBy);
   const loading = useCatalogueStore((state) => state.loading);
   const error = useCatalogueStore((state) => state.error);
@@ -30,7 +31,7 @@ export default function Catalogue() {
   useEffect(() => {
     if (!isAuthenticated) return;
     loadMedias();
-  }, [isAuthenticated, searchTerm, categoryFilter, orderBy, loadMedias]);
+  }, [isAuthenticated, searchTerm, categoryFilter, statusFilter, orderBy, loadMedias]);
 
   if (!isAuthenticated) return null;
 
@@ -49,9 +50,10 @@ export default function Catalogue() {
 
 // CatalogueControls Component
 const CatalogueControls = () => (
-  <div className="bg-base-100 container mx-auto grid w-full grid-cols-[auto_1fr] items-center justify-center gap-10 rounded-2xl px-8 py-3 sm:grid-cols-[repeat(7,auto)] lg:justify-end">
+  <div className="bg-base-100 container mx-auto grid w-full grid-cols-[auto_1fr] items-center justify-center gap-10 rounded-2xl px-8 py-3 sm:grid-cols-[repeat(9,auto)] lg:justify-end">
     <SearchInput />
     <CategorySelect />
+    <StatusSelect />
     <OrderBySelect />
     <AddMediaButton />
   </div>
@@ -103,6 +105,32 @@ const CategorySelect = () => {
         <option value="tv show">TV Shows</option>
         <option value="anime">Anime</option>
         <option value="documentary">Documentaries</option>
+      </select>
+    </div>
+  )
+};
+
+const StatusSelect = () => {
+  const statusFilter = useCatalogueStore((state) => state.statusFilter);
+  const setStatusFilter = useCatalogueStore((state) => state.setStatusFilter);
+
+  return (
+    <div className="col-span-2 grid grid-cols-subgrid items-center gap-2">
+      <label htmlFor="status">Status:</label>
+      <select
+        name="status"
+        className="select"
+        defaultValue={statusFilter}
+        onChange={(e) => {
+          setStatusFilter(e.target.value);
+        }}
+      >
+        <option value="">All</option>
+        <option value="watching">Watching</option>
+        <option value="on hold">On Hold</option>
+        <option value="completed">Completed</option>
+        <option value="dropped">Dropped</option>
+        <option value="planning">Planning</option>
       </select>
     </div>
   )

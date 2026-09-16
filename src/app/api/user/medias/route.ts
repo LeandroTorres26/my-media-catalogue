@@ -14,13 +14,15 @@ export async function GET(request: NextRequest) {
     const urlParams = request.nextUrl.searchParams;
     const searchTerm = urlParams.get("search");
     const category = urlParams.get("category");
+    const status = urlParams.get("status");
     const orderBy = urlParams.get("orderby");
 
     let matchQuery = {};
-    if (searchTerm || category) {
+    if (searchTerm || category || status) {
       matchQuery = {
         ...(searchTerm && { title: { $regex: searchTerm, $options: "i" } }),
         ...(category && { category: category }),
+        ...(status && { status: status })
       };
     }
 

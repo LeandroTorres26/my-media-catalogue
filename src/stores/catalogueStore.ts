@@ -6,6 +6,7 @@ import { MediaDocument } from '@/models/Media';
 interface CatalogueState {
     searchTerm: string;
     categoryFilter: string;
+    statusFilter: string;
     orderBy: string;
     medias: MediaDocument[];
     loading: boolean;
@@ -14,6 +15,7 @@ interface CatalogueState {
     mediaToEdit: MediaDocument | null;
     setSearchTerm: (term: string) => void;
     setCategoryFilter: (category: string) => void;
+    setStatusFilter: (status: string) => void;
     setOrderBy: (order: string) => void;
     loadMedias: () => Promise<void>;
     openCreateForm: () => void;
@@ -24,6 +26,7 @@ interface CatalogueState {
 export const useCatalogueStore = create<CatalogueState>()((set, get) => ({
     searchTerm: "",
     categoryFilter: "",
+    statusFilter: "",
     orderBy: "a-z",
     medias: [],
     loading: false,
@@ -32,15 +35,17 @@ export const useCatalogueStore = create<CatalogueState>()((set, get) => ({
     mediaToEdit: null,
     setSearchTerm: (term) => set({ searchTerm: term }),
     setCategoryFilter: (category) => set({ categoryFilter: category }),
+    setStatusFilter: (status) => set({ statusFilter: status }),
     setOrderBy: (order) => set({ orderBy: order }),
     loadMedias: async () => {
-        const { searchTerm, categoryFilter, orderBy } = get();
+        const { searchTerm, categoryFilter, statusFilter, orderBy } = get();
 
         set({ loading: true, error: null });
 
         const params = new URLSearchParams();
         if (searchTerm) params.append("search", searchTerm);
         if (categoryFilter) params.append("category", categoryFilter);
+        if (statusFilter) params.append("status", statusFilter);
         if (orderBy) params.append("orderby", orderBy);
 
         const query = params.toString();
